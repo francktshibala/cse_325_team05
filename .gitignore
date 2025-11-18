@@ -1,27 +1,6 @@
-# ============================================================
-# PLANNING & DOCUMENTATION (LOCAL ONLY)
-# ============================================================
+# .NET / Visual Studio
 
-# Block all text and markdown files in root
-/*.txt
-/*.md
-
-# Allow only README.md
-!README.md
-
-# ============================================================
-# VISUAL STUDIO / .NET BUILD ARTIFACTS
-# ============================================================
-
-## User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.userprefs
-
-## Build results
+# Build results
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -37,55 +16,62 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-## Visual Studio cache
+# Visual Studio
 .vs/
 .vscode/
 .idea/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
 *.sln.iml
 
-## NuGet Packages
+# NuGet
 *.nupkg
 *.snupkg
 **/packages/*
 *.nuget.props
 *.nuget.targets
 
-## .NET Core
+# Project files
 project.lock.json
 project.fragment.lock.json
 artifacts/
 
-## Entity Framework
+# Entity Framework
 *.edmx.sql
 *.edmx.diagram
 
-## Database files
+# Database
 *.mdf
 *.ldf
 *.ndf
 *.bak
 
-## Azure / Publish Profiles
+# Publishing
 *.azurePubxml
 *.pubxml
 *.PublishSettings
 
-## Secrets
+# Environment and secrets
 appsettings.Development.json
 appsettings.local.json
 .env
-*.env
 secrets.json
 
-## OS files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-.DS_Store
-.AppleDouble
-.LSOverride
+# Documentation and notes
+/*.txt
+/*.md
+!README.md
 
-## Media files
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Media
 *.png
 *.jpg
 *.jpeg
