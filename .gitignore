@@ -49,6 +49,9 @@ artifacts/
 *.ldf
 *.ndf
 *.bak
+*.db
+*.db-shm
+*.db-wal
 
 # Publishing
 *.azurePubxml
