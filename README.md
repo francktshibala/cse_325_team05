@@ -8,7 +8,7 @@ A modern .NET Blazor web application for managing patient flow, appointments, an
 - Adetokunbo Olutola Osibo
 - Daniel Adetaba Adongo - GitHub: Adetabanat
 - Bimbola Peace Osho-Lowu - GitHub: bimbolin
-- Ernest Ojakol
+- Ernest Ojakol - ernest-ojakol
 - Andrew Chikezie Obinna Onyekwere
 - Olubisi Olatunde Ayantoye
 - Gerald Robert Newell - GitHub: elcapitan-g
@@ -86,6 +86,7 @@ dotnet run
 Or press **F5** in Visual Studio.
 
 The application will start and be accessible at:
+
 - HTTPS: `https://localhost:5001`
 - HTTP: `http://localhost:5000`
 
@@ -207,6 +208,7 @@ dotnet test
 **Problem:** Database not found or migration errors
 
 **Solution:**
+
 ```bash
 # Delete the database file
 rm clinicqueue.db
@@ -224,6 +226,7 @@ dotnet ef database update
 ### NuGet Package Restore Fails
 
 **Solution:**
+
 ```bash
 dotnet clean
 dotnet restore --force
