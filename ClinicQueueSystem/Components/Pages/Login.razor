@@ -1,0 +1,31 @@
+@page "/login"
+@inject NavigationManager Nav
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+<EditForm Model="@model" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText @bind-Value="model.Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText type="password" @bind-Value="model.Password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+    <a href="/register">Register new account</a>
+</EditForm>
+
+@code {
+    private LoginModel model = new();
+
+    private async Task HandleLogin()
+    {
+        Nav.NavigateTo("/");
+    }
+}
