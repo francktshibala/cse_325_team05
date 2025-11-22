@@ -1,13 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 
+namespace ClinicQueueSystem.Data.Models;
+
 public class RegisterModel
 {
-    [Required, Compare("Password", ErrorMessage = "Passwords do not match.")]
-    public string ConfirmPassword { get; set; } = "";
+    [Required(ErrorMessage = "First name is required")]
+    [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+    public string FirstName { get; set; } = "";
 
-    [Required]
+    [Required(ErrorMessage = "Last name is required")]
+    [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+    public string LastName { get; set; } = "";
+
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email address")]
     public string Email { get; set; } = "";
 
-    [Required]
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
     public string Password { get; set; } = "";
+
+    [Required(ErrorMessage = "Please confirm your password")]
+    [Compare("Password", ErrorMessage = "Passwords do not match")]
+    public string ConfirmPassword { get; set; } = "";
+
+    [Required(ErrorMessage = "Please select a role")]
+    public string Role { get; set; } = "Patient";
 }
