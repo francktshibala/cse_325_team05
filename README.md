@@ -12,7 +12,7 @@ A modern .NET Blazor web application for managing patient flow, appointments, an
 - Andrew Chikezie Obinna Onyekwere
 - Olubisi Olatunde Ayantoye
 - Gerald Robert Newell - GitHub: elcapitan-g
-- Andrew Omoniyi
+- Andrew Omoniyi Mogbeyiromore
 
 ## Project Description
 
