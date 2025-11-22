@@ -60,7 +60,7 @@ public class AccountController : ControllerBase
         }
 
         // Validate role
-        var validRoles = new[] { "Patient", "Nurse", "Doctor", "Admin" };
+        var validRoles = new[] { "Patient", "Nurse", "Doctor", "Health Records", "Admin" };
         if (!validRoles.Contains(role))
         {
             role = "Patient";

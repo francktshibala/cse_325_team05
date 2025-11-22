@@ -12,7 +12,7 @@ A modern .NET Blazor web application for managing patient flow, appointments, an
 - Andrew Chikezie Obinna Onyekwere
 - Olubisi Olatunde Ayantoye
 - Gerald Robert Newell - GitHub: elcapitan-g
-- Andrew Omoniyi
+- Andrew Omoniyi Mogbeyiromore
 
 ## Project Description
 
@@ -242,12 +242,130 @@ dotnet restore --force
 
 ## User Roles
 
-The system has four predefined roles:
+The system has five predefined roles:
 
 - **Admin** - Full system access and user management
 - **Doctor** - Patient information, schedules, medical notes
 - **Nurse** - Queue management and patient intake
+- **Health Records** - Manage bookings, patient check-ins, and records
 - **Patient** - Personal appointments and check-in
+
+## Role-Based Access Control (RBAC)
+
+The system implements a comprehensive role-based access control system with granular permissions.
+
+### Role Hierarchy
+
+The system uses ASP.NET Core Identity for authentication and authorization. Each user is assigned one or more roles, and each role has specific permissions.
+
+### Permissions System
+
+The application uses a permission-based authorization system where each role has a defined set of permissions:
+
+#### Admin Permissions
+- Full access to all system features
+- User management (create, edit, delete users)
+- Role management
+- System reporting and exports
+- All appointment, patient, queue, and schedule management
+
+#### Doctor Permissions
+- View and manage appointments
+- View and edit patient records
+- Create and edit visit notes
+- Manage own schedule
+- View reports
+
+#### Nurse Permissions
+- View appointments
+- View and edit patient records
+- Manage queue (check-in, status updates)
+- Create and edit visit notes
+- View own schedule
+
+#### Health Records Permissions
+- View and manage appointments
+- Book appointments on behalf of patients
+- View and edit patient records
+- Create new patient records
+- Manage queue (check-in, status updates)
+- View schedules
+
+#### Patient Permissions
+- View own appointments
+- Book appointments
+- Cancel own appointments
+- View own patient records
+- Check in to queue
+
+### Using Permissions in Code
+
+#### In Blazor Components
+
+```csharp
+@inject AuthorizationService AuthService
+
+@if (await AuthService.HasPermissionAsync(Permissions.Appointments_Manage))
+{
+    <button>Manage Appointments</button>
+}
+
+@if (await AuthService.HasRoleAsync("Admin", "Doctor"))
+{
+    <p>Staff-only content</p>
+}
+```
+
+#### In Controllers
+
+```csharp
+[Authorize(Policy = "CanManageAppointments")]
+public class AppointmentsController : ControllerBase
+{
+    // Controller actions
+}
+
+[Authorize(Policy = "AdminOnly")]
+public IActionResult ManageUsers()
+{
+    // Admin-only action
+}
+```
+
+#### Using AuthorizationService
+
+```csharp
+@inject AuthorizationService AuthService
+
+@code {
+    private async Task<bool> CanEditPatient()
+    {
+        return await AuthService.HasPermissionAsync(Permissions.Patients_Edit);
+    }
+    
+    private async Task<bool> IsStaff()
+    {
+        return await AuthService.HasRoleAsync("Admin", "Doctor", "Nurse", "Health Records");
+    }
+}
+```
+
+### Authorization Policies
+
+The following predefined policies are available:
+
+- `AdminOnly` - Requires Admin role
+- `DoctorOnly` - Requires Doctor role
+- `NurseOnly` - Requires Nurse role
+- `HealthRecordsOnly` - Requires Health Records role
+- `PatientOnly` - Requires Patient role
+- `StaffOnly` - Requires any staff role (Admin, Doctor, Nurse, Health Records)
+- `ProviderOnly` - Requires provider role (Doctor, Nurse)
+- `CanManageAppointments` - Requires appointment management permission
+- `CanViewPatients` - Requires patient view permission
+- `CanManageQueue` - Requires queue management permission
+- `CanManageUsers` - Requires user management permission
+- `CanViewReports` - Requires report viewing permission
 
 ## Resources
 
