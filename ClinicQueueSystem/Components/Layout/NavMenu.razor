@@ -1,4 +1,10 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using ClinicQueueSystem.Services
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthorizationService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Clinic Queue</a>
     </div>
@@ -14,25 +20,56 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="appointments">
-                <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> Appointments
-            </NavLink>
-        </div>
+        @if (canViewAppointments)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="appointments">
+                    <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> Appointments
+                </NavLink>
+            </div>
+        }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="queue">
-                <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Queue Status
-            </NavLink>
-        </div>
+        @if (canViewQueue)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="queue">
+                    <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Queue Status
+                </NavLink>
+            </div>
+        }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="checkin">
-                <span class="bi bi-check-square-nav-menu" aria-hidden="true"></span> Check In
-            </NavLink>
-        </div>
+        @if (canCheckIn)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="checkin">
+                    <span class="bi bi-check-square-nav-menu" aria-hidden="true"></span> Check In
+                </NavLink>
+            </div>
+        }
 
-        @* Admin/Staff only menus will be added later based on roles *@
+        @if (canViewAdmin)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin">
+                    <span class="bi bi-gear-nav-menu" aria-hidden="true"></span> Admin
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
+
+@code {
+    private bool canViewAppointments = false;
+    private bool canViewQueue = false;
+    private bool canCheckIn = false;
+    private bool canViewAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        canViewAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_View);
+        canViewQueue = await AuthService.HasPermissionAsync(Permissions.Queue_View);
+        canCheckIn = await AuthService.HasPermissionAsync(Permissions.Queue_CheckIn);
+        canViewAdmin = await AuthService.HasPermissionAsync(Permissions.Users_View);
+    }
+}
 

@@ -11,7 +11,7 @@ public static class DbInitializer
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         // Define roles
-        string[] roleNames = { "Admin", "Doctor", "Nurse", "Patient" };
+        string[] roleNames = { "Admin", "Doctor", "Nurse", "Patient", "Health Records" };
 
         // Create roles if they don't exist
         foreach (var roleName in roleNames)

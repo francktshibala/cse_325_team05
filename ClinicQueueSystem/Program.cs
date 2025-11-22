@@ -1,6 +1,9 @@
+using ClinicQueueSystem.Authorization;
 using ClinicQueueSystem.Components;
 using ClinicQueueSystem.Data;
 using ClinicQueueSystem.Data.Models;
+using ClinicQueueSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +60,38 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(2);
     options.SlidingExpiration = true;
 });
+
+// Add authorization services
+builder.Services.AddAuthorization(options =>
+{
+    // Role-based policies
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("DoctorOnly", policy => policy.RequireRole("Doctor"));
+    options.AddPolicy("NurseOnly", policy => policy.RequireRole("Nurse"));
+    options.AddPolicy("HealthRecordsOnly", policy => policy.RequireRole("Health Records"));
+    options.AddPolicy("PatientOnly", policy => policy.RequireRole("Patient"));
+    options.AddPolicy("StaffOnly", policy => policy.RequireRole("Admin", "Doctor", "Nurse", "Health Records"));
+    options.AddPolicy("ProviderOnly", policy => policy.RequireRole("Doctor", "Nurse"));
+
+    // Permission-based policies for common operations
+    options.AddPolicy("CanManageAppointments", policy =>
+        policy.Requirements.Add(new PermissionRequirement(Permissions.Appointments_Manage)));
+    options.AddPolicy("CanViewPatients", policy =>
+        policy.Requirements.Add(new PermissionRequirement(Permissions.Patients_View)));
+    options.AddPolicy("CanManageQueue", policy =>
+        policy.Requirements.Add(new PermissionRequirement(Permissions.Queue_Manage)));
+    options.AddPolicy("CanManageUsers", policy =>
+        policy.Requirements.Add(new PermissionRequirement(Permissions.Users_View)));
+    options.AddPolicy("CanViewReports", policy =>
+        policy.Requirements.Add(new PermissionRequirement(Permissions.Reports_View)));
+});
+
+// Register authorization handlers
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, RoleHandler>();
+
+// Register custom authorization service
+builder.Services.AddScoped<AuthorizationService>();
 
 var app = builder.Build();
 

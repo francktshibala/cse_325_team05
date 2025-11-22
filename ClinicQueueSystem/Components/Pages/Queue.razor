@@ -1,0 +1,332 @@
+@page "/queue"
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ApplicationDbContext DbContext
+@inject AuthorizationService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+
+<PageTitle>Queue Status - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 style="color: #2C5F8D; font-weight: 700;">Queue Status</h1>
+            <p class="text-muted">View real-time queue information</p>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (queueTickets == null || !queueTickets.Any())
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); padding: 3rem;">
+                    <div class="text-center">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">👥</div>
+                        <h3 style="color: #495057; margin-bottom: 1rem;">No Patients in Queue</h3>
+                        <p style="color: #6c757d; font-size: 1.125rem;">
+                            @if (isPatient)
+                            {
+                                <text>You are not currently in the queue. Check in to join the queue.</text>
+                            }
+                            else
+                            {
+                                <text>There are no patients currently in the queue. The queue is empty.</text>
+                            }
+                        </p>
+                        @if (canCheckIn)
+                        {
+                            <a href="/checkin" class="btn btn-primary btn-lg mt-3">Check In</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 1.5rem;">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3 style="color: #2C5F8D; margin: 0;">@waitingCount</h3>
+                            <p style="color: #6c757d; margin: 0.5rem 0 0 0;">Waiting</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 style="color: #ffc107; margin: 0;">@calledCount</h3>
+                            <p style="color: #6c757d; margin: 0.5rem 0 0 0;">Called</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 style="color: #17a2b8; margin: 0;">@inRoomCount</h3>
+                            <p style="color: #6c757d; margin: 0.5rem 0 0 0;">In Room</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 style="color: #28a745; margin: 0;">@completedCount</h3>
+                            <p style="color: #6c757d; margin: 0.5rem 0 0 0;">Completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card" style="border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div class="card-header" style="background-color: #2C5F8D; color: white; font-weight: 600;">
+                        <h5 class="mb-0">Queue List</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Patient Name</th>
+                                        @if (!isPatient)
+                                        {
+                                            <th>Check-In Time</th>
+                                            <th>Estimated Wait</th>
+                                        }
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        @if (canManageQueue)
+                                        {
+                                            <th>Actions</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in queueTickets.OrderBy(t => t.QueuePosition))
+                                    {
+                                        <tr style="@(isPatient && ticket.Patient.UserId == currentUser?.Id ? "background-color: #e7f3ff;" : "")">
+                                            <td>
+                                                <strong style="font-size: 1.25rem; color: #2C5F8D;">#@ticket.QueuePosition</strong>
+                                            </td>
+                                            <td>
+                                                @ticket.Patient.User.FirstName @ticket.Patient.User.LastName
+                                                @if (isPatient && ticket.Patient.UserId == currentUser?.Id)
+                                                {
+                                                    <span class="badge bg-info ms-2">You</span>
+                                                }
+                                            </td>
+                                            @if (!isPatient)
+                                            {
+                                                <td>@ticket.CheckInTime.ToString("h:mm tt")</td>
+                                                <td>@ticket.EstimatedWaitMinutes minutes</td>
+                                            }
+                                            <td>
+                                                <span class="badge @GetStatusBadgeClass(ticket.Status)">
+                                                    @ticket.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetPriorityBadgeClass(ticket.Priority)">
+                                                    @GetPriorityText(ticket.Priority)
+                                                </span>
+                                            </td>
+                                            @if (canManageQueue)
+                                            {
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        @if (ticket.Status == "Waiting")
+                                                        {
+                                                            <button class="btn btn-outline-primary" @onclick="() => CallPatient(ticket.Id)" title="Call Patient">
+                                                                Call
+                                                            </button>
+                                                        }
+                                                        @if (ticket.Status == "Called")
+                                                        {
+                                                            <button class="btn btn-outline-success" @onclick="() => MoveToRoom(ticket.Id)" title="Move to Room">
+                                                                In Room
+                                                            </button>
+                                                        }
+                                                        @if (ticket.Status == "InRoom")
+                                                        {
+                                                            <button class="btn btn-outline-secondary" @onclick="() => CompleteVisit(ticket.Id)" title="Complete Visit">
+                                                                Complete
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (isPatient)
+        {
+            var myTicket = queueTickets.FirstOrDefault(t => t.Patient.UserId == currentUser?.Id);
+            @if (myTicket != null)
+            {
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-info" role="alert">
+                            <h5 class="alert-heading">Your Queue Information</h5>
+                            <p class="mb-2">
+                                <strong>Your Position:</strong> #@myTicket.QueuePosition<br />
+                                <strong>Status:</strong> @myTicket.Status<br />
+                                <strong>Estimated Wait Time:</strong> @myTicket.EstimatedWaitMinutes minutes
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    private List<QueueTicket>? queueTickets;
+    private bool loading = true;
+    private ApplicationUser? currentUser;
+    private bool isPatient = false;
+    private bool canCheckIn = false;
+    private bool canManageQueue = false;
+
+    private int waitingCount => queueTickets?.Count(t => t.Status == "Waiting") ?? 0;
+    private int calledCount => queueTickets?.Count(t => t.Status == "Called") ?? 0;
+    private int inRoomCount => queueTickets?.Count(t => t.Status == "InRoom") ?? 0;
+    private int completedCount => queueTickets?.Count(t => t.Status == "Completed") ?? 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUser = await UserManager.GetUserAsync(authState.User);
+        
+        // Pre-compute permission checks
+        isPatient = await AuthService.IsPatientAsync();
+        canCheckIn = await AuthService.HasPermissionAsync(Permissions.Queue_CheckIn);
+        canManageQueue = await AuthService.HasPermissionAsync(Permissions.Queue_Manage);
+        
+        await LoadQueue();
+        loading = false;
+    }
+
+    private async Task LoadQueue()
+    {
+        var query = DbContext.QueueTickets
+            .Include(q => q.Patient)
+                .ThenInclude(p => p.User)
+            .Include(q => q.Appointment)
+            .AsQueryable();
+
+        // Filter based on role
+        if (isPatient)
+        {
+            // Patients see only their own queue ticket
+            var patient = await DbContext.Patients
+                .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
+            
+            if (patient != null)
+            {
+                query = query.Where(q => q.PatientId == patient.Id && q.Status != "Completed");
+            }
+            else
+            {
+                queueTickets = new List<QueueTicket>();
+                return;
+            }
+        }
+        else
+        {
+            // Staff see all active queue tickets (exclude completed)
+            query = query.Where(q => q.Status != "Completed");
+        }
+
+        queueTickets = await query.ToListAsync();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Waiting" => "bg-primary",
+            "Called" => "bg-warning",
+            "InRoom" => "bg-info",
+            "Completed" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPriorityBadgeClass(int priority)
+    {
+        return priority switch
+        {
+            1 => "bg-secondary",
+            2 => "bg-warning",
+            3 => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPriorityText(int priority)
+    {
+        return priority switch
+        {
+            1 => "Normal",
+            2 => "Urgent",
+            3 => "Emergency",
+            _ => "Normal"
+        };
+    }
+
+    private async Task CallPatient(int ticketId)
+    {
+        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+        if (ticket != null && ticket.Status == "Waiting")
+        {
+            ticket.Status = "Called";
+            ticket.CalledTime = DateTime.UtcNow;
+            await DbContext.SaveChangesAsync();
+            await LoadQueue();
+            StateHasChanged();
+        }
+    }
+
+    private async Task MoveToRoom(int ticketId)
+    {
+        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+        if (ticket != null && ticket.Status == "Called")
+        {
+            ticket.Status = "InRoom";
+            await DbContext.SaveChangesAsync();
+            await LoadQueue();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CompleteVisit(int ticketId)
+    {
+        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+        if (ticket != null && ticket.Status == "InRoom")
+        {
+            ticket.Status = "Completed";
+            ticket.CompletedTime = DateTime.UtcNow;
+            await DbContext.SaveChangesAsync();
+            await LoadQueue();
+            StateHasChanged();
+        }
+    }
+}
+
