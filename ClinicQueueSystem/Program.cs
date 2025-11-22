@@ -1,6 +1,7 @@
 using ClinicQueueSystem.Components;
 using ClinicQueueSystem.Data;
 using ClinicQueueSystem.Data.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add controllers for authentication endpoints
+builder.Services.AddControllers();
+
+// Add HttpContextAccessor for auth state
+builder.Services.AddHttpContextAccessor();
+
+// Add cascading authentication state for Blazor components
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider>();
 
 // Add database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -40,9 +51,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // Configure application cookie
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/access-denied";
     options.ExpireTimeSpan = TimeSpan.FromHours(2);
     options.SlidingExpiration = true;
 });
@@ -79,6 +90,8 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
