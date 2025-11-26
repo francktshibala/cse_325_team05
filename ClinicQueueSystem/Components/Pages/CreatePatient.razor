@@ -1,0 +1,84 @@
+@page "/patients/create"
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Create Patient - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 style="color: #2C5F8D; margin-bottom: 1rem;">Create New Patient</h2>
+
+    <EditForm Model="newPatient" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label class="form-label">First Name</label>
+            <InputText class="form-control" @bind-Value="newPatient.User.FirstName" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <InputText class="form-control" @bind-Value="newPatient.User.LastName" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <InputText type="email" class="form-control" @bind-Value="newPatient.User.Email" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Medical Record Number</label>
+            <InputText class="form-control" @bind-Value="newPatient.MedicalRecordNumber" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <InputText class="form-control" @bind-Value="newPatient.PhoneNumber" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <InputDate class="form-control" @bind-Value="newPatient.DateOfBirth" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Gender</label>
+            <InputText class="form-control" @bind-Value="newPatient.Gender" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Address</label>
+            <InputText class="form-control" @bind-Value="newPatient.Address" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Emergency Contact</label>
+            <InputText class="form-control" @bind-Value="newPatient.EmergencyContact" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Emergency Phone</label>
+            <InputText class="form-control" @bind-Value="newPatient.EmergencyPhone" />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Create Patient</button>
+        <a href="/patients" class="btn btn-secondary mt-3 ml-2">Cancel</a>
+    </EditForm>
+</div>
+
+@code {
+    private Patient newPatient = new()
+    {
+        User = new ApplicationUser()
+    };
+
+    private async Task HandleValidSubmit()
+    {
+        Db.Patients.Add(newPatient);
+        await Db.SaveChangesAsync();
+        Navigation.NavigateTo("/patients");
+    }
+}
