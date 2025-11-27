@@ -1,0 +1,1309 @@
+Using launch settings from /Users/new/Library/CloudStorage/OneDrive-BYU-PathwayWorldwide/mywork/cse_325_team05-1/ClinicQueueSystem/Properties/launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (20ms) [Parameters=[@__normalizedName_0='?' (Size = 5)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?' (Size = 5)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?' (Size = 7)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?' (Size = 14)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__normalizedEmail_0='?' (Size = 21)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."NormalizedEmail" = @__normalizedEmail_0
+      LIMIT 2
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5225
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /Users/new/Library/CloudStorage/OneDrive-BYU-PathwayWorldwide/mywork/cse_325_team05-1/ClinicQueueSystem
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "q"."Id", "q"."AppointmentId", "q"."CalledTime", "q"."CheckInTime", "q"."CompletedTime", "q"."EstimatedWaitMinutes", "q"."PatientId", "q"."Priority", "q"."QueuePosition", "q"."Status", "p"."Id", "p"."Address", "p"."CreatedAt", "p"."DateOfBirth", "p"."EmergencyContact", "p"."EmergencyPhone", "p"."Gender", "p"."MedicalRecordNumber", "p"."PhoneNumber", "p"."UserId", "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName", "a0"."Id", "a0"."AppointmentType", "a0"."CancelledAt", "a0"."CreatedAt", "a0"."DurationMinutes", "a0"."Notes", "a0"."PatientId", "a0"."ProviderId", "a0"."Reason", "a0"."ScheduledDateTime", "a0"."Status"
+      FROM "QueueTickets" AS "q"
+      INNER JOIN "Patients" AS "p" ON "q"."PatientId" = "p"."Id"
+      INNER JOIN "AspNetUsers" AS "a" ON "p"."UserId" = "a"."Id"
+      LEFT JOIN "Appointments" AS "a0" ON "q"."AppointmentId" = "a0"."Id"
+      WHERE "q"."Status" <> 'Completed'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AppointmentType", "a"."CancelledAt", "a"."CreatedAt", "a"."DurationMinutes", "a"."Notes", "a"."PatientId", "a"."ProviderId", "a"."Reason", "a"."ScheduledDateTime", "a"."Status", "p"."Id", "p"."Address", "p"."CreatedAt", "p"."DateOfBirth", "p"."EmergencyContact", "p"."EmergencyPhone", "p"."Gender", "p"."MedicalRecordNumber", "p"."PhoneNumber", "p"."UserId", "a0"."Id", "a0"."AccessFailedCount", "a0"."ConcurrencyStamp", "a0"."CreatedAt", "a0"."Email", "a0"."EmailConfirmed", "a0"."FirstName", "a0"."LastName", "a0"."LockoutEnabled", "a0"."LockoutEnd", "a0"."NormalizedEmail", "a0"."NormalizedUserName", "a0"."PasswordHash", "a0"."PhoneNumber", "a0"."PhoneNumberConfirmed", "a0"."SecurityStamp", "a0"."TwoFactorEnabled", "a0"."UserName", "p0"."Id", "p0"."CreatedAt", "p0"."IsActive", "p0"."LicenseNumber", "p0"."ProviderType", "p0"."Specialty", "p0"."UserId", "a1"."Id", "a1"."AccessFailedCount", "a1"."ConcurrencyStamp", "a1"."CreatedAt", "a1"."Email", "a1"."EmailConfirmed", "a1"."FirstName", "a1"."LastName", "a1"."LockoutEnabled", "a1"."LockoutEnd", "a1"."NormalizedEmail", "a1"."NormalizedUserName", "a1"."PasswordHash", "a1"."PhoneNumber", "a1"."PhoneNumberConfirmed", "a1"."SecurityStamp", "a1"."TwoFactorEnabled", "a1"."UserName"
+      FROM "Appointments" AS "a"
+      INNER JOIN "Patients" AS "p" ON "a"."PatientId" = "p"."Id"
+      INNER JOIN "AspNetUsers" AS "a0" ON "p"."UserId" = "a0"."Id"
+      INNER JOIN "Providers" AS "p0" ON "a"."ProviderId" = "p0"."Id"
+      INNER JOIN "AspNetUsers" AS "a1" ON "p0"."UserId" = "a1"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AppointmentType", "a"."CancelledAt", "a"."CreatedAt", "a"."DurationMinutes", "a"."Notes", "a"."PatientId", "a"."ProviderId", "a"."Reason", "a"."ScheduledDateTime", "a"."Status", "p"."Id", "p"."Address", "p"."CreatedAt", "p"."DateOfBirth", "p"."EmergencyContact", "p"."EmergencyPhone", "p"."Gender", "p"."MedicalRecordNumber", "p"."PhoneNumber", "p"."UserId", "a0"."Id", "a0"."AccessFailedCount", "a0"."ConcurrencyStamp", "a0"."CreatedAt", "a0"."Email", "a0"."EmailConfirmed", "a0"."FirstName", "a0"."LastName", "a0"."LockoutEnabled", "a0"."LockoutEnd", "a0"."NormalizedEmail", "a0"."NormalizedUserName", "a0"."PasswordHash", "a0"."PhoneNumber", "a0"."PhoneNumberConfirmed", "a0"."SecurityStamp", "a0"."TwoFactorEnabled", "a0"."UserName", "p0"."Id", "p0"."CreatedAt", "p0"."IsActive", "p0"."LicenseNumber", "p0"."ProviderType", "p0"."Specialty", "p0"."UserId", "a1"."Id", "a1"."AccessFailedCount", "a1"."ConcurrencyStamp", "a1"."CreatedAt", "a1"."Email", "a1"."EmailConfirmed", "a1"."FirstName", "a1"."LastName", "a1"."LockoutEnabled", "a1"."LockoutEnd", "a1"."NormalizedEmail", "a1"."NormalizedUserName", "a1"."PasswordHash", "a1"."PhoneNumber", "a1"."PhoneNumberConfirmed", "a1"."SecurityStamp", "a1"."TwoFactorEnabled", "a1"."UserName"
+      FROM "Appointments" AS "a"
+      INNER JOIN "Patients" AS "p" ON "a"."PatientId" = "p"."Id"
+      INNER JOIN "AspNetUsers" AS "a0" ON "p"."UserId" = "a0"."Id"
+      INNER JOIN "Providers" AS "p0" ON "a"."ProviderId" = "p0"."Id"
+      INNER JOIN "AspNetUsers" AS "a1" ON "p0"."UserId" = "a1"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "q"."Id", "q"."AppointmentId", "q"."CalledTime", "q"."CheckInTime", "q"."CompletedTime", "q"."EstimatedWaitMinutes", "q"."PatientId", "q"."Priority", "q"."QueuePosition", "q"."Status", "p"."Id", "p"."Address", "p"."CreatedAt", "p"."DateOfBirth", "p"."EmergencyContact", "p"."EmergencyPhone", "p"."Gender", "p"."MedicalRecordNumber", "p"."PhoneNumber", "p"."UserId", "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName", "a0"."Id", "a0"."AppointmentType", "a0"."CancelledAt", "a0"."CreatedAt", "a0"."DurationMinutes", "a0"."Notes", "a0"."PatientId", "a0"."ProviderId", "a0"."Reason", "a0"."ScheduledDateTime", "a0"."Status"
+      FROM "QueueTickets" AS "q"
+      INNER JOIN "Patients" AS "p" ON "q"."PatientId" = "p"."Id"
+      INNER JOIN "AspNetUsers" AS "a" ON "p"."UserId" = "a"."Id"
+      LEFT JOIN "Appointments" AS "a0" ON "q"."AppointmentId" = "a0"."Id"
+      WHERE "q"."Status" <> 'Completed'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__user_Id_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ClaimType", "a"."ClaimValue", "a"."UserId"
+      FROM "AspNetUserClaims" AS "a"
+      WHERE "a"."UserId" = @__user_Id_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__normalizedName_0='?' (Size = 5)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."ConcurrencyStamp", "a"."Name", "a"."NormalizedName"
+      FROM "AspNetRoles" AS "a"
+      WHERE "a"."NormalizedName" = @__normalizedName_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__role_Id_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."ClaimType", "a"."ClaimValue"
+      FROM "AspNetRoleClaims" AS "a"
+      WHERE "a"."RoleId" = @__role_Id_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__p_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a"."Id", "a"."AccessFailedCount", "a"."ConcurrencyStamp", "a"."CreatedAt", "a"."Email", "a"."EmailConfirmed", "a"."FirstName", "a"."LastName", "a"."LockoutEnabled", "a"."LockoutEnd", "a"."NormalizedEmail", "a"."NormalizedUserName", "a"."PasswordHash", "a"."PhoneNumber", "a"."PhoneNumberConfirmed", "a"."SecurityStamp", "a"."TwoFactorEnabled", "a"."UserName"
+      FROM "AspNetUsers" AS "a"
+      WHERE "a"."Id" = @__p_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (Size = 36)], CommandType='Text', CommandTimeout='30']
+      SELECT "a0"."Name"
+      FROM "AspNetUserRoles" AS "a"
+      INNER JOIN "AspNetRoles" AS "a0" ON "a"."RoleId" = "a0"."Id"
+      WHERE "a"."UserId" = @__userId_0
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...

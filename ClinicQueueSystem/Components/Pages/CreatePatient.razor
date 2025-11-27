@@ -1,5 +1,4 @@
 @page "/patients/create"
-@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using Microsoft.EntityFrameworkCore
@@ -73,8 +72,7 @@
 @code {
     private Patient newPatient = new()
     {
-        User = new ApplicationUser(),
-        DateOfBirth = DateTime.Today
+        User = new ApplicationUser()
     };
 
     private async Task HandleValidSubmit()

@@ -1,5 +1,4 @@
 @page "/patients"
-@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using Microsoft.EntityFrameworkCore
@@ -8,23 +7,11 @@
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="m-0" style="color: #2C5F8D;">Patients</h2>
-        <a href="/patients/create" class="btn btn-primary">Add Patient</a>
-    </div>
+    <h2 class="mb-4" style="color: #2C5F8D;">Patients</h2>
 
     <div class="mb-4">
         <input type="text" class="form-control" placeholder="Search by name or MRN..." @bind="searchText" />
     </div>
-
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <div class="alert alert-success">@successMessage</div>
-    }
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger">@errorMessage</div>
-    }
 
     @if (filteredPatients?.Any() != true)
     {
@@ -46,11 +33,7 @@
                             <p class="card-text text-muted" style="flex-grow: 1;">
                                 @patient.PhoneNumber | @patient.User.Email
                             </p>
-                            <div class="d-flex gap-2 mt-auto">
-                                <a href="/patients/@patient.Id" class="btn btn-primary">View</a>
-                                <a href="/patients/edit/@patient.Id" class="btn btn-secondary">Edit</a>
-                                <button type="button" class="btn btn-danger" @onclick="() => ConfirmDelete(patient.Id)">Delete</button>
-                            </div>
+                            <a href="/patients/@patient.Id" class="btn btn-primary mt-auto">View Details</a>
                         </div>
                     </div>
                 </div>
@@ -62,8 +45,6 @@
 @code {
     private string searchText = string.Empty;
     private List<Patient> patients = new();
-    private string? errorMessage;
-    private string? successMessage;
     private IEnumerable<Patient> filteredPatients => patients
         .Where(p => string.IsNullOrWhiteSpace(searchText)
                     || p.MedicalRecordNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase)
@@ -75,33 +56,5 @@
         patients = await Db.Patients
             .Include(p => p.User)
             .ToListAsync();
-    }
-
-    private async Task ConfirmDelete(int id)
-    {
-        try
-        {
-            var entity = await Db.Patients.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
-            if (entity == null)
-            {
-                errorMessage = "Patient not found.";
-                return;
-            }
-            Db.Patients.Remove(entity);
-            await Db.SaveChangesAsync();
-            patients.RemoveAll(p => p.Id == id);
-            successMessage = "Patient deleted.";
-            errorMessage = null;
-        }
-        catch (DbUpdateException)
-        {
-            errorMessage = "Unable to delete patient due to related records.";
-            successMessage = null;
-        }
-        catch (Exception)
-        {
-            errorMessage = "An error occurred while deleting the patient.";
-            successMessage = null;
-        }
     }
 }
