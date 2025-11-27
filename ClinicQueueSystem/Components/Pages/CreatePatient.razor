@@ -55,6 +55,12 @@
             </div>
 
             <div class="form-group mb-3">
+                <label class="form-label">Name</label>
+                <input class="form-control" value="@GetSelectedUserName()" readonly />
+                <small class="form-text text-muted">Auto-filled from the selected user account.</small>
+            </div>
+
+            <div class="form-group mb-3">
                 <label class="form-label">Medical Record Number</label>
                 <InputText class="form-control" @bind-Value="newPatient.MedicalRecordNumber" placeholder="MRN-12345" />
             </div>
@@ -117,6 +123,12 @@
     private bool canManagePatients = false;
     private bool isProcessing = false;
     private string errorMessage = "";
+
+    private string GetSelectedUserName()
+    {
+        var user = availableUsers.FirstOrDefault(u => u.Id == selectedUserId);
+        return user is null ? "" : $"{user.FirstName} {user.LastName}";
+    }
 
     protected override async Task OnInitializedAsync()
     {
