@@ -1,8 +1,11 @@
 @page "/patients"
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
+@inject AuthorizationService AuthService
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
@@ -33,7 +36,13 @@
                             <p class="card-text text-muted" style="flex-grow: 1;">
                                 @patient.PhoneNumber | @patient.User.Email
                             </p>
-                            <a href="/patients/@patient.Id" class="btn btn-primary mt-auto">View Details</a>
+                            <div class="d-flex gap-2 mt-auto">
+                                <a href="/patients/@patient.Id" class="btn btn-primary">View</a>
+                                @if (canBookAppointments && !isPatient)
+                                {
+                                    <a href="/appointments/book?patientId=@patient.Id" class="btn btn-success">Book</a>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -45,6 +54,8 @@
 @code {
     private string searchText = string.Empty;
     private List<Patient> patients = new();
+    private bool isPatient = false;
+    private bool canBookAppointments = false;
     private IEnumerable<Patient> filteredPatients => patients
         .Where(p => string.IsNullOrWhiteSpace(searchText)
                     || p.MedicalRecordNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase)
@@ -53,6 +64,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isPatient = await AuthService.IsPatientAsync();
+        canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
+
         patients = await Db.Patients
             .Include(p => p.User)
             .ToListAsync();

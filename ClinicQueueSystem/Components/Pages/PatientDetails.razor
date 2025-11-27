@@ -1,6 +1,10 @@
 @page "/patients/{Id:int}"
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthorizationService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
 
@@ -31,9 +35,13 @@
                 <p><strong>Emergency Contact:</strong> @patient.EmergencyContact</p>
                 <p><strong>Emergency Phone:</strong> @patient.EmergencyPhone</p>
             </div>
-            <div class="card-footer">
+            <div class="card-footer d-flex gap-2">
                 <a href="/patients/edit/@patient.Id" class="btn btn-primary">Edit Patient</a>
                 <a href="/patients" class="btn btn-secondary">Back to List</a>
+                @if (canBookAppointments)
+                {
+                    <a href="/appointments/book?patientId=@patient.Id" class="btn btn-success">Book Appointment</a>
+                }
             </div>
         </div>
     }
@@ -44,6 +52,7 @@
     public int Id { get; set; }
 
     private Patient? patient;
+    private bool canBookAppointments = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,5 +60,6 @@
         patient = await Db.Patients
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == Id);
+        canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
     }
 }

@@ -46,13 +46,21 @@
                     {
                         <div class="form-group mb-3">
                             <label class="form-label">Patient</label>
-                            <select class="form-control" @bind="bookModel.PatientId">
+                            <select class="form-control" @bind="bookModel.PatientId" disabled="@(patientId.HasValue)">
                                 <option value="">-- Select Patient --</option>
                                 @foreach (var p in patients)
                                 {
                                     <option value="@p.Id">@p.User.FirstName @p.User.LastName (@p.MedicalRecordNumber)</option>
                                 }
                             </select>
+                            @if (patientId.HasValue && bookModel.PatientId is not null)
+                            {
+                                var p = patients.FirstOrDefault(x => x.Id == bookModel.PatientId);
+                                if (p != null)
+                                {
+                                    <div class="text-muted mt-1">Booking for: <strong>@p.User.FirstName @p.User.LastName (@p.MedicalRecordNumber)</strong></div>
+                                }
+                            }
                         </div>
                     }
                     else
@@ -140,6 +148,7 @@
     [SupplyParameterFromQuery] public int? providerId { get; set; }
     [SupplyParameterFromQuery] public DateTime? date { get; set; }
     [SupplyParameterFromQuery] public int? duration { get; set; }
+    [SupplyParameterFromQuery] public int? patientId { get; set; }
 
     private class BookAppointmentModel
     {
@@ -202,6 +211,7 @@
         if (providerId.HasValue) bookModel.ProviderId = providerId.Value;
         if (date.HasValue) bookModel.Date = date.Value.Date;
         if (duration.HasValue) bookModel.DurationMinutes = duration.Value;
+        if (patientId.HasValue) bookModel.PatientId = patientId.Value;
 
         await LoadSlotsInternalAsync();
     }
