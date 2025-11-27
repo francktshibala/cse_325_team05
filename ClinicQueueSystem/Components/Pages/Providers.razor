@@ -1,0 +1,90 @@
+@page "/providers"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@inject ApplicationDbContext Db
+@inject AuthorizationService AuthService
+
+<PageTitle>Providers - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0" style="color: #2C5F8D;">Providers</h2>
+        @if (canManage)
+        {
+            <a class="btn btn-primary" href="/providers/create">Add Provider</a>
+        }
+    </div>
+
+    <div class="mb-3">
+        <input class="form-control" placeholder="Search by name or specialty..." @bind="search" />
+    </div>
+
+    @if (filtered?.Any() != true)
+    {
+        <div class="alert alert-info">No providers found.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var p in filtered!)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="mb-1" style="color:#2C5F8D;">@p.User.FirstName @p.User.LastName</h5>
+                            <div class="text-muted">@p.ProviderType @if(!string.IsNullOrWhiteSpace(p.Specialty)){ <text>- @p.Specialty</text> }</div>
+                            <div class="text-muted">License: @p.LicenseNumber</div>
+                            <div class="mt-auto d-flex gap-2">
+                                <a class="btn btn-outline-primary btn-sm" href="/providers/@p.Id">Profile</a>
+                                @if (canManage)
+                                {
+                                    <a class="btn btn-outline-secondary btn-sm" href="/providers/@p.Id/schedule">Schedule</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<Provider> providers = new();
+    private IEnumerable<Provider>? filtered;
+    private string search = string.Empty;
+    private bool canManage = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        canManage = await AuthService.HasPermissionAsync(Permissions.Users_View) || await AuthService.IsAdminAsync();
+        providers = await Db.Providers.Include(p => p.User).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
+        Apply();
+    }
+
+    private void Apply()
+    {
+        IEnumerable<Provider> q = providers;
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            q = q.Where(p =>
+                p.User.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                p.User.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                p.Specialty.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                p.ProviderType.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                p.LicenseNumber.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+        filtered = q.ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        Apply();
+    }
+}
+
+

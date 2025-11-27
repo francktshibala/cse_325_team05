@@ -60,6 +60,16 @@
             </div>
         }
 
+        @if (canViewProviders)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="providers" @onclick="HandleNavClick">
+                    <span class="bi bi-people-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Providers</span>
+                </NavLink>
+            </div>
+        }
+
         @if (canViewAdmin)
         {
             <div class="nav-item px-3">
@@ -77,6 +87,7 @@
     private bool canViewQueue = false;
     private bool canCheckIn = false;
     private bool canViewAdmin = false;
+    private bool canViewProviders = false;
 
 
     [Parameter]
@@ -88,6 +99,7 @@
         canViewQueue = await AuthService.HasPermissionAsync(Permissions.Queue_View);
         canCheckIn = await AuthService.HasPermissionAsync(Permissions.Queue_CheckIn);
         canViewAdmin = await AuthService.HasPermissionAsync(Permissions.Users_View);
+        canViewProviders = canViewAdmin || await AuthService.IsDoctorAsync() || await AuthService.IsNurseAsync() || await AuthService.IsHealthRecordsAsync();
     }
 
     private Task HandleNavClick()
