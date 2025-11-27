@@ -1,84 +1,174 @@
 @page "/patients/create"
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
+@inject AuthorizationService AuthService
+@attribute [Authorize]
+@rendermode InteractiveServer
 
 <PageTitle>Create Patient - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
     <h2 style="color: #2C5F8D; margin-bottom: 1rem;">Create New Patient</h2>
 
-    <EditForm Model="newPatient" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="form-group">
-            <label class="form-label">First Name</label>
-            <InputText class="form-control" @bind-Value="newPatient.User.FirstName" />
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
         </div>
+    }
 
-        <div class="form-group">
-            <label class="form-label">Last Name</label>
-            <InputText class="form-control" @bind-Value="newPatient.User.LastName" />
+    @if (!canManagePatients)
+    {
+        <div class="alert alert-warning">
+            You do not have permission to create patients.
         </div>
-
-        <div class="form-group">
-            <label class="form-label">Email</label>
-            <InputText type="email" class="form-control" @bind-Value="newPatient.User.Email" />
+    }
+    else if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
+    }
+    else
+    {
+        <EditForm Model="newPatient" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="form-group">
-            <label class="form-label">Medical Record Number</label>
-            <InputText class="form-control" @bind-Value="newPatient.MedicalRecordNumber" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Select User Account</label>
+                <select class="form-select" @bind="selectedUserId">
+                    <option value="">-- Select a user --</option>
+                    @foreach (var user in availableUsers)
+                    {
+                        <option value="@user.Id">@user.FirstName @user.LastName (@user.Email)</option>
+                    }
+                </select>
+                <small class="form-text text-muted">Select an existing user account to associate with this patient record.</small>
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <InputText class="form-control" @bind-Value="newPatient.PhoneNumber" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Medical Record Number</label>
+                <InputText class="form-control" @bind-Value="newPatient.MedicalRecordNumber" placeholder="MRN-12345" />
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Date of Birth</label>
-            <InputDate class="form-control" @bind-Value="newPatient.DateOfBirth" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Phone Number</label>
+                <InputText class="form-control" @bind-Value="newPatient.PhoneNumber" placeholder="(555) 123-4567" />
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Gender</label>
-            <InputText class="form-control" @bind-Value="newPatient.Gender" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Date of Birth</label>
+                <InputDate class="form-control" @bind-Value="newPatient.DateOfBirth" />
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Address</label>
-            <InputText class="form-control" @bind-Value="newPatient.Address" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Gender</label>
+                <select class="form-select" @bind="newPatient.Gender">
+                    <option value="">-- Select --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Emergency Contact</label>
-            <InputText class="form-control" @bind-Value="newPatient.EmergencyContact" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Address</label>
+                <InputText class="form-control" @bind-Value="newPatient.Address" placeholder="123 Main St, City, State ZIP" />
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Emergency Phone</label>
-            <InputText class="form-control" @bind-Value="newPatient.EmergencyPhone" />
-        </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Emergency Contact Name</label>
+                <InputText class="form-control" @bind-Value="newPatient.EmergencyContact" placeholder="John Doe" />
+            </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Create Patient</button>
-        <a href="/patients" class="btn btn-secondary mt-3 ml-2">Cancel</a>
-    </EditForm>
+            <div class="form-group mb-3">
+                <label class="form-label">Emergency Phone</label>
+                <InputText class="form-control" @bind-Value="newPatient.EmergencyPhone" placeholder="(555) 987-6543" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    Create Patient
+                </button>
+                <a href="/patients" class="btn btn-secondary">Cancel</a>
+            </div>
+        </EditForm>
+    }
 </div>
 
 @code {
-    private Patient newPatient = new()
+    private Patient newPatient = new();
+    private List<ApplicationUser> availableUsers = new();
+    private string selectedUserId = "";
+    private bool loading = true;
+    private bool canManagePatients = false;
+    private bool isProcessing = false;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
     {
-        User = new ApplicationUser()
-    };
+        // Check permissions
+        canManagePatients = await AuthService.HasPermissionAsync(Permissions.Patients_Create);
+
+        if (canManagePatients)
+        {
+            // Load users who are not already patients and have the Patient role
+            var existingPatientUserIds = await Db.Patients.Select(p => p.UserId).ToListAsync();
+
+            availableUsers = await Db.Users
+                .Where(u => !existingPatientUserIds.Contains(u.Id))
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .ToListAsync();
+        }
+
+        loading = false;
+    }
 
     private async Task HandleValidSubmit()
     {
-        Db.Patients.Add(newPatient);
-        await Db.SaveChangesAsync();
-        Navigation.NavigateTo("/patients");
+        errorMessage = "";
+
+        if (string.IsNullOrEmpty(selectedUserId))
+        {
+            errorMessage = "Please select a user account.";
+            return;
+        }
+
+        // Check if MRN is unique
+        var existingMrn = await Db.Patients.AnyAsync(p => p.MedicalRecordNumber == newPatient.MedicalRecordNumber);
+        if (existingMrn)
+        {
+            errorMessage = "Medical Record Number already exists. Please use a unique MRN.";
+            return;
+        }
+
+        isProcessing = true;
+
+        try
+        {
+            newPatient.UserId = selectedUserId;
+            Db.Patients.Add(newPatient);
+            await Db.SaveChangesAsync();
+            Navigation.NavigateTo("/patients");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating patient: {ex.Message}";
+            isProcessing = false;
+        }
     }
 }
