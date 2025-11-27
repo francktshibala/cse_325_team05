@@ -10,7 +10,13 @@
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
-    <h2 class="mb-4" style="color: #2C5F8D;">Patients</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0" style="color: #2C5F8D;">Patients</h2>
+        @if (canCreatePatient)
+        {
+            <a href="/patients/create" class="btn btn-primary">Add Patient</a>
+        }
+    </div>
 
     <div class="mb-4">
         <input type="text" class="form-control" placeholder="Search by name or MRN..." @bind="searchText" />
@@ -56,6 +62,7 @@
     private List<Patient> patients = new();
     private bool isPatient = false;
     private bool canBookAppointments = false;
+    private bool canCreatePatient = false;
     private IEnumerable<Patient> filteredPatients => patients
         .Where(p => string.IsNullOrWhiteSpace(searchText)
                     || p.MedicalRecordNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase)
@@ -66,6 +73,7 @@
     {
         isPatient = await AuthService.IsPatientAsync();
         canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
+        canCreatePatient = await AuthService.HasPermissionAsync(Permissions.Patients_Create);
 
         patients = await Db.Patients
             .Include(p => p.User)
