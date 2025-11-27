@@ -1,0 +1,162 @@
+@page "/providers/create"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "AdminOnly")]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject ClinicQueueSystem.Data.ApplicationDbContext Db
+@inject UserManager<ClinicQueueSystem.Data.Models.ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager Nav
+
+<PageTitle>Add Provider - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0; max-width: 800px;">
+    <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+        <div style="background-color: #f8f9fa; border-bottom: 2px solid #2C5F8D; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+            <h3 style="font-size: 1.5rem; font-weight: 600; color: #212529; margin: 0;">Add Provider</h3>
+        </div>
+        <div style="padding: 24px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mb-3">@errorMessage</div>
+            }
+            <EditForm Model="model" OnValidSubmit="SubmitAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        <InputText class="form-control" @bind-Value="model.FirstName" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        <InputText class="form-control" @bind-Value="model.LastName" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" type="email" @bind-Value="model.Email" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Phone</label>
+                        <InputText class="form-control" @bind-Value="model.PhoneNumber" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">Provider Type</label>
+                        <select class="form-control" @bind="model.ProviderType">
+                            <option value="">-- Select --</option>
+                            <option>Doctor</option>
+                            <option>Nurse</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Specialty</label>
+                        <InputText class="form-control" @bind-Value="model.Specialty" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">License Number</label>
+                        <InputText class="form-control" @bind-Value="model.LicenseNumber" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Default Slot Duration</label>
+                        <select class="form-control" @bind="model.DefaultDurationMinutes">
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60">60 minutes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Save Provider</button>
+                    <a href="/providers/@createdProviderId" class="btn btn-secondary" disabled="@(!created)">View Profile</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class CreateProviderModel
+    {
+        [Required] public string FirstName { get; set; } = string.Empty;
+        [Required] public string LastName { get; set; } = string.Empty;
+        [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        [Required] public string ProviderType { get; set; } = string.Empty; // Doctor/Nurse
+        [Required] public string Specialty { get; set; } = string.Empty;
+        [Required] public string LicenseNumber { get; set; } = string.Empty;
+        [Range(10, 240)] public int DefaultDurationMinutes { get; set; } = 30;
+    }
+
+    private CreateProviderModel model = new();
+    private string? errorMessage;
+    private bool created = false;
+    private int createdProviderId;
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+
+        // create user
+        var existing = await UserManager.FindByEmailAsync(model.Email);
+        if (existing != null)
+        {
+            errorMessage = "A user with this email already exists.";
+            return;
+        }
+
+        var user = new ClinicQueueSystem.Data.Models.ApplicationUser
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            PhoneNumber = model.PhoneNumber,
+            EmailConfirmed = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        var createResult = await UserManager.CreateAsync(user, "Provider123!");
+        if (!createResult.Succeeded)
+        {
+            errorMessage = string.Join("; ", createResult.Errors.Select(e => e.Description));
+            return;
+        }
+
+        // assign role
+        if (!await RoleManager.RoleExistsAsync(model.ProviderType))
+        {
+            await RoleManager.CreateAsync(new IdentityRole(model.ProviderType));
+        }
+        await UserManager.AddToRoleAsync(user, model.ProviderType);
+
+        // create provider record
+        var provider = new Provider
+        {
+            UserId = user.Id,
+            LicenseNumber = model.LicenseNumber,
+            Specialty = model.Specialty,
+            ProviderType = model.ProviderType,
+            DefaultDurationMinutes = model.DefaultDurationMinutes,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        Db.Providers.Add(provider);
+        await Db.SaveChangesAsync();
+
+        created = true;
+        createdProviderId = provider.Id;
+    }
+}
+
+

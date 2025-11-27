@@ -1,0 +1,137 @@
+@page "/providers/{Id:int}/schedule"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "AdminOnly")]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject NavigationManager Nav
+
+<PageTitle>Provider Schedule - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0; max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 style="color: #2C5F8D;" class="m-0">Schedule for @provider?.User.FirstName @provider?.User.LastName</h3>
+        <a class="btn btn-secondary" href="/providers/@Id">Back to Profile</a>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="mb-3">Add Availability Block</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Day</label>
+                    <select class="form-control" @bind="newDay">
+                        @foreach (var d in Enum.GetValues<DayOfWeek>())
+                        {
+                            <option value="@d">@d</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Start</label>
+                    <input type="time" class="form-control" @bind="newStartTime" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">End</label>
+                    <input type="time" class="form-control" @bind="newEndTime" />
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button class="btn btn-primary" @onclick="AddBlock">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="mb-3">Current Weekly Availability</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (slots.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-muted">No availability configured.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var s in slots.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime))
+                            {
+                                <tr>
+                                    <td>@s.DayOfWeek</td>
+                                    <td>@s.StartTime.ToString(@"hh\:mm")</td>
+                                    <td>@s.EndTime.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSlot(s.Id)">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Provider? provider;
+    private List<Schedule> slots = new();
+
+    private DayOfWeek newDay = DayOfWeek.Monday;
+    private TimeOnly? newStartTime = new TimeOnly(9, 0);
+    private TimeOnly? newEndTime = new TimeOnly(17, 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        provider = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == Id);
+        if (provider == null) return;
+        slots = await Db.Schedules.Where(s => s.ProviderId == Id && s.IsAvailable).ToListAsync();
+    }
+
+    private async Task AddBlock()
+    {
+        if (provider == null) return;
+        if (newStartTime is null || newEndTime is null) return;
+        var newStart = new TimeSpan(newStartTime.Value.Hour, newStartTime.Value.Minute, 0);
+        var newEnd = new TimeSpan(newEndTime.Value.Hour, newEndTime.Value.Minute, 0);
+        if (newEnd <= newStart) return;
+
+        var s = new Schedule
+        {
+            ProviderId = provider.Id,
+            DayOfWeek = newDay,
+            StartTime = newStart,
+            EndTime = newEnd,
+            IsAvailable = true
+        };
+        Db.Schedules.Add(s);
+        await Db.SaveChangesAsync();
+        slots.Add(s);
+        StateHasChanged();
+    }
+
+    private async Task DeleteSlot(int id)
+    {
+        var s = await Db.Schedules.FindAsync(id);
+        if (s != null)
+        {
+            Db.Schedules.Remove(s);
+            await Db.SaveChangesAsync();
+            slots.RemoveAll(x => x.Id == id);
+            StateHasChanged();
+        }
+    }
+}
+
+

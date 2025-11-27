@@ -102,6 +102,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var db = services.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
         await DbInitializer.Initialize(services);
     }
     catch (Exception ex)

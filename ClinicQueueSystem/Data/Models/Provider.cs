@@ -7,6 +7,7 @@ public class Provider
     public string LicenseNumber { get; set; } = string.Empty;
     public string Specialty { get; set; } = string.Empty;
     public string ProviderType { get; set; } = string.Empty; // Doctor, Nurse
+    public int DefaultDurationMinutes { get; set; } = 30;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
