@@ -1,0 +1,278 @@
+@page "/appointments/book"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+
+@inject ApplicationDbContext Db
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthorizationService AuthService
+@inject IAppointmentService AppointmentService
+@inject NavigationManager Nav
+
+<PageTitle>Book Appointment - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0; max-width: 800px;">
+    <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+        <div style="background-color: #f8f9fa; border-bottom: 2px solid #2C5F8D; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+            <h3 style="font-size: 1.5rem; font-weight: 600; color: #212529; margin: 0;">Book Appointment</h3>
+        </div>
+        <div style="padding: 24px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mb-3">@errorMessage</div>
+            }
+            @if (success)
+            {
+                <div class="alert alert-success mb-3">
+                    Appointment scheduled on <strong>@bookModel.ScheduledDateTime.ToString("MMMM dd, yyyy 'at' h:mm tt")</strong>.
+                </div>
+                <a class="btn btn-primary" href="/appointments">Go to Appointments</a>
+            }
+            else
+            {
+                <EditForm Model="bookModel" OnValidSubmit="SubmitAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    @if (!isPatient)
+                    {
+                        <div class="form-group mb-3">
+                            <label class="form-label">Patient</label>
+                            <select class="form-control" @bind="bookModel.PatientId">
+                                <option value="">-- Select Patient --</option>
+                                @foreach (var p in patients)
+                                {
+                                    <option value="@p.Id">@p.User.FirstName @p.User.LastName (@p.MedicalRecordNumber)</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3 text-muted">
+                            Booking for: <strong>@currentUser?.FirstName @currentUser?.LastName</strong>
+                        </div>
+                    }
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Provider</label>
+                        <select class="form-control" @bind="bookModel.ProviderId">
+                            <option value="">-- Select Provider --</option>
+                            @foreach (var pr in providers)
+                            {
+                                <option value="@pr.Id">@pr.User.FirstName @pr.User.LastName (@pr.Specialty)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <InputDate @bind-Value="bookModel.Date" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Duration (minutes)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" @bind="bookModel.DurationMinutes" min="10" step="5" />
+                                <button class="btn btn-outline-primary" type="button" @onclick="LoadSlotsInternalAsync">Reload Slots</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label class="form-label">Available Time</label>
+                        @if (loadingSlots)
+                        {
+                            <div class="text-muted">Loading available slots...</div>
+                        }
+                        else if (availableSlots.Count == 0)
+                        {
+                            <div class="text-muted">No available slots. Try a different date, provider, or duration.</div>
+                        }
+                        else
+                        {
+                            <select class="form-control" @bind="selectedSlotString">
+                                <option value="">-- Select Time --</option>
+                                @foreach (var s in availableSlots)
+                                {
+                                    <option value="@s.ToString("o")">@s.ToString("h:mm tt")</option>
+                                }
+                            </select>
+                        }
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">Appointment Type</label>
+                            <select class="form-control" @bind="bookModel.AppointmentType">
+                                <option value="">-- Select Type --</option>
+                                <option>Checkup</option>
+                                <option>Consultation</option>
+                                <option>Follow-up</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Reason</label>
+                            <InputText class="form-control" @bind-Value="bookModel.Reason" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary" disabled="@loadingSlots">Book Appointment</button>
+                        <a class="btn btn-secondary" href="/appointments">Cancel</a>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // Query parameters from Availability page
+    [SupplyParameterFromQuery] public int? providerId { get; set; }
+    [SupplyParameterFromQuery] public DateTime? date { get; set; }
+    [SupplyParameterFromQuery] public int? duration { get; set; }
+
+    private class BookAppointmentModel
+    {
+        [Required(ErrorMessage = "Patient is required")]
+        public int? PatientId { get; set; }
+
+        [Required(ErrorMessage = "Provider is required")]
+        public int? ProviderId { get; set; }
+
+        [Required]
+        public DateTime Date { get; set; } = DateTime.Today;
+
+        [Range(10, 240)]
+        public int DurationMinutes { get; set; } = 30;
+
+        [Required(ErrorMessage = "Appointment type is required")]
+        public string AppointmentType { get; set; } = string.Empty;
+
+        public string? Reason { get; set; }
+
+        // Final chosen slot
+        public DateTime ScheduledDateTime { get; set; }
+    }
+
+    private BookAppointmentModel bookModel = new();
+    private bool isPatient = false;
+    private ApplicationUser? currentUser;
+    private List<Patient> patients = new();
+    private List<Provider> providers = new();
+    private List<DateTime> availableSlots = new();
+    private string? selectedSlotString;
+    private bool loadingSlots = false;
+    private bool success = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Determine user and role
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUser = await UserManager.GetUserAsync(authState.User);
+        isPatient = await AuthService.IsPatientAsync();
+
+        // Patients: preselect their patient record
+        if (isPatient && currentUser != null)
+        {
+            var patient = await Db.Patients.FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+            if (patient != null)
+            {
+                bookModel.PatientId = patient.Id;
+            }
+        }
+        else
+        {
+            patients = await Db.Patients.Include(p => p.User).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
+        }
+
+        providers = await Db.Providers.Include(p => p.User).Where(p => p.IsActive).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
+
+        // Prefill from query
+        if (providerId.HasValue) bookModel.ProviderId = providerId.Value;
+        if (date.HasValue) bookModel.Date = date.Value.Date;
+        if (duration.HasValue) bookModel.DurationMinutes = duration.Value;
+
+        await LoadSlotsInternalAsync();
+    }
+
+    private async Task OnProviderOrDateChanged(ChangeEventArgs? _)
+    {
+        await LoadSlotsInternalAsync();
+    }
+
+    private async Task LoadSlotsInternalAsync()
+    {
+        availableSlots.Clear();
+        selectedSlotString = null;
+        errorMessage = null;
+
+        if (bookModel.ProviderId is null || bookModel.ProviderId == 0)
+        {
+            return;
+        }
+        loadingSlots = true;
+        StateHasChanged();
+        availableSlots = (await AppointmentService.GetAvailableSlotsAsync(bookModel.ProviderId.Value, bookModel.Date, bookModel.DurationMinutes)).ToList();
+        loadingSlots = false;
+    }
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+
+        if (isPatient && bookModel.PatientId is null)
+        {
+            // safety net; should be preset
+            errorMessage = "Patient context not found.";
+            return;
+        }
+        if (bookModel.ProviderId is null || bookModel.ProviderId == 0)
+        {
+            errorMessage = "Please select a provider.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(selectedSlotString) || !DateTime.TryParse(selectedSlotString, out var chosenStart))
+        {
+            errorMessage = "Please select an available time.";
+            return;
+        }
+
+        var isFree = await AppointmentService.IsSlotAvailableAsync(bookModel.ProviderId.Value, chosenStart, bookModel.DurationMinutes);
+        if (!isFree)
+        {
+            errorMessage = "The selected slot is no longer available. Please refresh slots and try another time.";
+            await LoadSlotsInternalAsync();
+            return;
+        }
+
+        // Create appointment
+        var appt = new Appointment
+        {
+            PatientId = bookModel.PatientId!.Value,
+            ProviderId = bookModel.ProviderId.Value,
+            ScheduledDateTime = chosenStart,
+            DurationMinutes = bookModel.DurationMinutes,
+            AppointmentType = string.IsNullOrWhiteSpace(bookModel.AppointmentType) ? "Consultation" : bookModel.AppointmentType,
+            Status = "Scheduled",
+            Reason = bookModel.Reason
+        };
+        Db.Appointments.Add(appt);
+        await Db.SaveChangesAsync();
+
+        bookModel.ScheduledDateTime = chosenStart;
+        success = true;
+    }
+}
+
+

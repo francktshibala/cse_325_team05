@@ -10,6 +10,7 @@
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 @attribute [Authorize]
 
 <PageTitle>Appointments - Clinic Queue System</PageTitle>
@@ -19,6 +20,61 @@
         <div class="col-md-12">
             <h1 style="color: #2C5F8D; font-weight: 700;">Appointments</h1>
             <p class="text-muted">View and manage your appointments</p>
+            <a href="/appointments/availability" class="btn btn-outline-primary btn-sm">Find Availability</a>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12 col-lg-10 d-flex flex-wrap align-items-end gap-2">
+            <div class="me-2">
+                <label class="form-label mb-1">Status</label>
+                <select class="form-control form-control-sm" @bind="filterStatus">
+                    <option value="">All</option>
+                    <option>Scheduled</option>
+                    <option>Confirmed</option>
+                    <option>Cancelled</option>
+                    <option>Completed</option>
+                </select>
+            </div>
+            <div class="me-2">
+                <label class="form-label mb-1">From</label>
+                <InputDate @bind-Value="filterFrom" class="form-control form-control-sm" />
+            </div>
+            <div class="me-2">
+                <label class="form-label mb-1">To</label>
+                <InputDate @bind-Value="filterTo" class="form-control form-control-sm" />
+            </div>
+            @if (!isPatient)
+            {
+                <div class="me-2">
+                    <label class="form-label mb-1">Provider</label>
+                    <select class="form-control form-control-sm" @bind="filterProviderId">
+                        <option value="">All</option>
+                        @foreach (var pr in providerFilterOptions)
+                        {
+                            <option value="@pr.Id">@pr.User.FirstName @pr.User.LastName (@pr.Specialty)</option>
+                        }
+                    </select>
+                </div>
+            }
+            <div class="me-2">
+                <label class="form-label mb-1">Sort</label>
+                <select class="form-control form-control-sm" @bind="sortOrder">
+                    <option value="dateAsc">Date ↑</option>
+                    <option value="dateDesc">Date ↓</option>
+                    <option value="statusAsc">Status A-Z</option>
+                    <option value="statusDesc">Status Z-A</option>
+                </select>
+            </div>
+            <div class="me-2">
+                <button class="btn btn-sm btn-outline-primary" @onclick="ApplyFilters">Apply</button>
+            </div>
+        </div>
+        <div class="col-12 col-lg-2 d-flex justify-content-lg-end align-items-end">
+            @if (canBookAppointments)
+            {
+                <a href="/appointments/book" class="btn btn-primary btn-sm">Book New</a>
+            }
         </div>
     </div>
 
@@ -30,7 +86,7 @@
             </div>
         </div>
     }
-    else if (appointments == null || !appointments.Any())
+    else if (filtered?.Any() != true)
     {
         <div class="row">
             <div class="col-md-12">
@@ -48,10 +104,7 @@
                                 <text>There are no appointments in the system at this time.</text>
                             }
                         </p>
-                        @if (canBookAppointments)
-                        {
-                            <a href="/appointments/book" class="btn btn-primary btn-lg">Book New Appointment</a>
-                        }
+                        <a href="/appointments/availability" class="btn btn-outline-primary btn-lg">Find Availability</a>
                     </div>
                 </div>
             </div>
@@ -62,7 +115,7 @@
         <div class="row mb-3">
             <div class="col-md-12 d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="badge bg-primary">Total: @appointments.Count()</span>
+                    <span class="badge bg-primary">Total: @filtered.Count()</span>
                     @if (canBookAppointments)
                     {
                         <a href="/appointments/book" class="btn btn-primary btn-sm ms-2">Book New Appointment</a>
@@ -72,7 +125,7 @@
         </div>
 
         <div class="row">
-            @foreach (var appointment in appointments.OrderBy(a => a.ScheduledDateTime))
+            @foreach (var appointment in filtered)
             {
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100" style="border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
@@ -148,6 +201,12 @@
                                             Edit
                                         </button>
                                     }
+                                    @if (appointment.Status != "Cancelled" && appointment.Status != "Completed")
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => RescheduleAppointment(appointment.Id)">
+                                            Reschedule
+                                        </button>
+                                    }
                                     @if (canCancelAppointments && appointment.Status != "Cancelled" && appointment.Status != "Completed")
                                     {
                                         <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelAppointment(appointment.Id)">
@@ -173,6 +232,16 @@
     private bool canManageAppointments = false;
     private bool canCancelAppointments = false;
 
+    // Filters/sorting
+    private string? filterStatus = "";
+    private DateTime filterFrom = DateTime.Today;
+    private DateTime? filterTo = null;
+    private int? filterProviderId = null;
+    private string sortOrder = "dateAsc";
+
+    private List<Appointment>? filtered;
+    private List<Provider> providerFilterOptions = new();
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -189,6 +258,16 @@
         canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
         canManageAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Manage);
         canCancelAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Cancel);
+
+        // provider options for staff
+        if (!isPatient)
+        {
+            providerFilterOptions = await DbContext.Providers
+                .Include(p => p.User)
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
+                .ToListAsync();
+        }
 
         await LoadAppointments();
         loading = false;
@@ -238,7 +317,12 @@
         }
         // Admins, Nurses, and Health Records see all appointments
 
+        // Only future appointments by default
+        var today = DateTime.Today;
+        query = query.Where(a => a.ScheduledDateTime >= today);
+
         appointments = await query.ToListAsync();
+        ApplyFilters();
     }
 
     private string GetStatusBadgeClass(string status)
@@ -259,6 +343,11 @@
         // NavigationManager.NavigateTo($"/appointments/edit/{appointmentId}");
     }
 
+    private void RescheduleAppointment(int appointmentId)
+    {
+        NavigationManager.NavigateTo($"/appointments/reschedule/{appointmentId}");
+    }
+
     private async Task CancelAppointment(int appointmentId)
     {
         var appointment = await DbContext.Appointments.FindAsync(appointmentId);
@@ -270,6 +359,44 @@
             await LoadAppointments();
             StateHasChanged();
         }
+    }
+
+    private void ApplyFilters()
+    {
+        if (appointments == null)
+        {
+            filtered = new List<Appointment>();
+            return;
+        }
+
+        IEnumerable<Appointment> q = appointments;
+
+        if (!string.IsNullOrEmpty(filterStatus))
+        {
+            q = q.Where(a => a.Status.Equals(filterStatus, StringComparison.OrdinalIgnoreCase));
+        }
+        if (filterFrom != default)
+        {
+            q = q.Where(a => a.ScheduledDateTime.Date >= filterFrom.Date);
+        }
+        if (filterTo.HasValue)
+        {
+            q = q.Where(a => a.ScheduledDateTime.Date <= filterTo.Value.Date);
+        }
+        if (filterProviderId.HasValue && filterProviderId.Value > 0)
+        {
+            q = q.Where(a => a.ProviderId == filterProviderId.Value);
+        }
+
+        q = sortOrder switch
+        {
+            "dateDesc" => q.OrderByDescending(a => a.ScheduledDateTime),
+            "statusAsc" => q.OrderBy(a => a.Status).ThenBy(a => a.ScheduledDateTime),
+            "statusDesc" => q.OrderByDescending(a => a.Status).ThenBy(a => a.ScheduledDateTime),
+            _ => q.OrderBy(a => a.ScheduledDateTime)
+        };
+
+        filtered = q.ToList();
     }
 
 }

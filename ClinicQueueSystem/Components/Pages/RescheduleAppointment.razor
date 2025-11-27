@@ -1,0 +1,157 @@
+@page "/appointments/reschedule/{Id:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+
+@inject ApplicationDbContext Db
+@inject IAppointmentService AppointmentService
+@inject NavigationManager Nav
+
+<PageTitle>Reschedule Appointment - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0; max-width: 800px;">
+    <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+        <div style="background-color: #f8f9fa; border-bottom: 2px solid #2C5F8D; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+            <h3 style="font-size: 1.5rem; font-weight: 600; color: #212529; margin: 0;">Reschedule Appointment</h3>
+        </div>
+        <div style="padding: 24px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mb-3">@errorMessage</div>
+            }
+            @if (success)
+            {
+                <div class="alert alert-success mb-3">
+                    Appointment moved to <strong>@newStart?.ToString("MMMM dd, yyyy 'at' h:mm tt")</strong>.
+                </div>
+                <a class="btn btn-primary" href="/appointments">Back to Appointments</a>
+            }
+            else if (appointment is null)
+            {
+                <div class="alert alert-warning">Appointment not found.</div>
+                <a class="btn btn-secondary" href="/appointments">Back</a>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <div><strong>Current:</strong> @appointment.ScheduledDateTime.ToString("MMMM dd, yyyy 'at' h:mm tt") (@appointment.DurationMinutes min)</div>
+                    <div><strong>Provider:</strong> @appointment.Provider.User.FirstName @appointment.Provider.User.LastName (@appointment.Provider.Specialty)</div>
+                </div>
+
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <InputDate @bind-Value="selectedDate" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" @bind="durationMinutes" min="10" step="5" />
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button class="btn btn-primary" @onclick="LoadSlots">Load Slots</button>
+                    </div>
+                </div>
+
+                @if (loading)
+                {
+                    <div class="text-muted">Loading available slots...</div>
+                }
+                else if (availableSlots.Count == 0)
+                {
+                    <div class="alert alert-info">No available slots for the selected date.</div>
+                }
+                else
+                {
+                    <div class="form-group mb-3">
+                        <label class="form-label">Available Time</label>
+                        <select class="form-control" @bind="selectedSlotString">
+                            <option value="">-- Select Time --</option>
+                            @foreach (var s in availableSlots)
+                            {
+                                <option value="@s.ToString("o")">@s.ToString("h:mm tt")</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" @onclick="Submit">Confirm Reschedule</button>
+                        <a class="btn btn-secondary" href="/appointments">Cancel</a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Appointment? appointment;
+    private List<DateTime> availableSlots = new();
+    private string? selectedSlotString;
+    private DateTime selectedDate = DateTime.Today;
+    private int durationMinutes = 30;
+    private bool loading = false;
+    private bool success = false;
+    private DateTime? newStart = null;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appointment = await Db.Appointments
+            .Include(a => a.Provider)
+                .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(a => a.Id == Id);
+
+        if (appointment != null)
+        {
+            selectedDate = appointment.ScheduledDateTime.Date;
+            durationMinutes = appointment.DurationMinutes;
+            await LoadSlots();
+        }
+    }
+
+    private async Task LoadSlots()
+    {
+        if (appointment == null) return;
+        loading = true;
+        StateHasChanged();
+        availableSlots = (await AppointmentService.GetAvailableSlotsAsync(appointment.ProviderId, selectedDate, durationMinutes)).ToList();
+        loading = false;
+    }
+
+    private async Task Submit()
+    {
+        errorMessage = null;
+        if (appointment == null) return;
+        if (string.IsNullOrWhiteSpace(selectedSlotString) || !DateTime.TryParse(selectedSlotString, out var chosenStart))
+        {
+            errorMessage = "Please select a new time.";
+            return;
+        }
+
+        var ok = await AppointmentService.IsSlotAvailableAsync(appointment.ProviderId, chosenStart, durationMinutes);
+        if (!ok)
+        {
+            errorMessage = "Selected slot is no longer available. Reload and try another time.";
+            await LoadSlots();
+            return;
+        }
+
+        appointment.ScheduledDateTime = chosenStart;
+        appointment.DurationMinutes = durationMinutes;
+        if (appointment.Status == "Cancelled")
+        {
+            appointment.Status = "Scheduled";
+            appointment.CancelledAt = null;
+        }
+        await Db.SaveChangesAsync();
+        newStart = chosenStart;
+        success = true;
+    }
+}
+
+

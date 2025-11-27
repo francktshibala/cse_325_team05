@@ -1,0 +1,115 @@
+@page "/appointments/availability"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject IAppointmentService AppointmentService
+
+<PageTitle>Availability - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 class="mb-3" style="color: #2C5F8D;">Find Provider Availability</h2>
+
+    <div class="row g-3 align-items-end mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Provider</label>
+            <select class="form-control" @bind="selectedProviderId">
+                @foreach (var p in providers)
+                {
+                    <option value="@p.Id">@p.User.FirstName @p.User.LastName (@p.Specialty)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Date</label>
+            <InputDate @bind-Value="selectedDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Slot Duration (minutes)</label>
+            <input type="number" class="form-control" @bind="slotMinutes" min="10" step="5" />
+        </div>
+        <div class="col-md-2 d-grid">
+            <button class="btn btn-primary" @onclick="LoadSlots">Load Slots</button>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (availableSlots.Count == 0)
+    {
+        <div class="alert alert-info">No available slots for the selected date and provider.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+            @foreach (var slot in availableSlots)
+            {
+                <div class="col">
+                    <div class="card h-100" style="border: 1px solid #e9ecef; border-radius: 8px;">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="text-muted" style="font-size: 0.9rem;">
+                                    @slot.ToString("dddd, MMM dd")
+                                </div>
+                                <div style="font-size: 1.25rem; font-weight: 600; color: #2C5F8D;">
+                                    @slot.ToString("h:mm tt")
+                                </div>
+                                <div class="text-muted" style="font-size: 0.9rem;">
+                                    @slotMinutes min
+                                </div>
+                            </div>
+                            <div class="d-grid mt-3">
+                                <a class="btn btn-outline-primary"
+                                   href="/appointments/book?providerId=@selectedProviderId&date=@slot.ToString("o")&duration=@slotMinutes">
+                                    Select
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Provider> providers = new();
+    private int selectedProviderId;
+    private DateTime selectedDate = DateTime.Today;
+    private int slotMinutes = 30;
+    private bool loading = false;
+    private List<DateTime> availableSlots = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        providers = await Db.Providers
+            .Include(p => p.User)
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
+            .ToListAsync();
+
+        if (providers.Count > 0)
+        {
+            selectedProviderId = providers.First().Id;
+            await LoadSlots();
+        }
+    }
+
+    private async Task LoadSlots()
+    {
+        loading = true;
+        StateHasChanged();
+        availableSlots = (await AppointmentService.GetAvailableSlotsAsync(selectedProviderId, selectedDate, slotMinutes)).ToList();
+        loading = false;
+    }
+}
+
+

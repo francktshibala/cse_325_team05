@@ -92,6 +92,7 @@ builder.Services.AddScoped<IAuthorizationHandler, RoleHandler>();
 
 // Register custom authorization service
 builder.Services.AddScoped<AuthorizationService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 var app = builder.Build();
 
