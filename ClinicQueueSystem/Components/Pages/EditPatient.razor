@@ -1,21 +1,46 @@
 @page "/patients/edit/{Id:int}"
-@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
+@inject AuthorizationService AuthService
+@attribute [Authorize]
+@rendermode InteractiveServer
 
 <PageTitle>Edit Patient - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
-    @if (patient == null)
+    @if (!canEditPatients)
+    {
+        <div class="alert alert-warning">
+            You do not have permission to edit patients.
+        </div>
+    }
+    else if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (patient == null)
     {
         <div class="alert alert-warning">Patient not found.</div>
     }
     else
     {
         <h2 style="color: #2C5F8D; margin-bottom: 1rem;">Edit Patient</h2>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
 
         <EditForm Model="patient" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
@@ -71,8 +96,16 @@
                 <InputText class="form-control" @bind-Value="patient.EmergencyPhone" />
             </div>
 
-            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-            <a href="/patients" class="btn btn-secondary mt-3 ml-2">Cancel</a>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                    @if (isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    Save Changes
+                </button>
+                <a href="/patients" class="btn btn-secondary">Cancel</a>
+            </div>
         </EditForm>
     }
 </div>
@@ -82,21 +115,42 @@
     public int Id { get; set; }
 
     private Patient? patient;
+    private bool loading = true;
+    private bool canEditPatients = false;
+    private bool isProcessing = false;
+    private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        patient = await Db.Patients
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.Id == Id);
+        canEditPatients = await AuthService.HasPermissionAsync(Permissions.Patients_Edit);
+
+        if (canEditPatients)
+        {
+            patient = await Db.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Id == Id);
+        }
+
+        loading = false;
     }
 
     private async Task HandleValidSubmit()
     {
-        if (patient != null)
+        if (patient == null) return;
+
+        errorMessage = "";
+        isProcessing = true;
+
+        try
         {
             Db.Patients.Update(patient);
             await Db.SaveChangesAsync();
             Navigation.NavigateTo("/patients");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating patient: {ex.Message}";
+            isProcessing = false;
         }
     }
 }

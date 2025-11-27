@@ -1,14 +1,27 @@
 @page "/patients/{Id:int}"
-@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@inject AuthorizationService AuthService
+@attribute [Authorize]
+@rendermode InteractiveServer
 
 <PageTitle>Patient Details - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
-    @if (patient == null)
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (patient == null)
     {
         <div class="alert alert-warning">
             Patient not found.
@@ -16,27 +29,106 @@
     }
     else
     {
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
+
         <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title" style="color: #2C5F8D;">
+            <div class="card-header" style="background-color: #2C5F8D; color: white;">
+                <h3 class="card-title mb-0">
                     @patient.User.FirstName @patient.User.LastName
                 </h3>
             </div>
             <div class="card-body">
-                <p><strong>Medical Record Number:</strong> @patient.MedicalRecordNumber</p>
-                <p><strong>Date of Birth:</strong> @patient.DateOfBirth.ToString("yyyy-MM-dd")</p>
-                <p><strong>Gender:</strong> @patient.Gender</p>
-                <p><strong>Phone:</strong> @patient.PhoneNumber</p>
-                <p><strong>Email:</strong> @patient.User.Email</p>
-                <p><strong>Address:</strong> @patient.Address</p>
-                <p><strong>Emergency Contact:</strong> @patient.EmergencyContact</p>
-                <p><strong>Emergency Phone:</strong> @patient.EmergencyPhone</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Medical Record Number:</strong> @patient.MedicalRecordNumber</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Date of Birth:</strong> @patient.DateOfBirth.ToString("MMMM dd, yyyy")</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Gender:</strong> @patient.Gender</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Phone:</strong> @patient.PhoneNumber</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Email:</strong> @patient.User.Email</p>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <p><strong>Address:</strong> @patient.Address</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Emergency Contact:</strong> @patient.EmergencyContact</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <p><strong>Emergency Phone:</strong> @patient.EmergencyPhone</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-footer">
-                <a href="/patients/edit/@patient.Id" class="btn btn-primary">Edit Patient</a>
-                <a href="/patients" class="btn btn-secondary">Back to List</a>
+            <div class="card-footer bg-light">
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (canEditPatients)
+                    {
+                        <a href="/patients/edit/@patient.Id" class="btn btn-primary">
+                            <span class="bi bi-pencil me-1"></span>
+                            Edit Patient
+                        </a>
+                    }
+                    <a href="/patients" class="btn btn-secondary">
+                        <span class="bi bi-arrow-left me-1"></span>
+                        Back to List
+                    </a>
+                    @if (canDeletePatients)
+                    {
+                        <button class="btn btn-danger ms-auto" @onclick="ShowDeleteConfirmation" disabled="@isDeleting">
+                            @if (isDeleting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <span class="bi bi-trash me-1"></span>
+                            }
+                            Delete Patient
+                        </button>
+                    }
+                </div>
             </div>
         </div>
+
+        @if (showDeleteModal)
+        {
+            <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirm Delete</h5>
+                            <button type="button" class="btn-close" @onclick="CancelDelete"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the patient record for <strong>@patient.User.FirstName @patient.User.LastName</strong>?</p>
+                            <p class="text-danger"><strong>Warning:</strong> This action cannot be undone. All associated appointments, visits, and queue entries will be affected.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                            <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     }
 </div>
 
@@ -45,12 +137,62 @@
     public int Id { get; set; }
 
     private Patient? patient;
+    private bool loading = true;
+    private bool canEditPatients = false;
+    private bool canDeletePatients = false;
+    private bool isDeleting = false;
+    private bool showDeleteModal = false;
+    private string errorMessage = "";
+    private string successMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        // Load patient including User info
+        canEditPatients = await AuthService.HasPermissionAsync(Permissions.Patients_Edit);
+        // Only admins and health records staff can delete patients (same permission as edit for now)
+        canDeletePatients = await AuthService.HasRoleAsync("Admin", "Health Records");
+
         patient = await Db.Patients
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == Id);
+
+        loading = false;
+    }
+
+    private void ShowDeleteConfirmation()
+    {
+        showDeleteModal = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteModal = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (patient == null) return;
+
+        showDeleteModal = false;
+        isDeleting = true;
+        errorMessage = "";
+
+        try
+        {
+            // Note: This will only work if there are no dependent records (appointments, visits, etc.)
+            // You might need to handle cascading deletes or prevent deletion if there are dependencies
+            Db.Patients.Remove(patient);
+            await Db.SaveChangesAsync();
+            Navigation.NavigateTo("/patients");
+        }
+        catch (DbUpdateException)
+        {
+            errorMessage = "Cannot delete patient. This patient has associated appointments or visits. Please remove those first.";
+            isDeleting = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting patient: {ex.Message}";
+            isDeleting = false;
+        }
     }
 }
