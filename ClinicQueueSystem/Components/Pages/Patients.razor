@@ -1,16 +1,30 @@
 @page "/patients"
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
+@inject AuthorizationService AuthService
+@attribute [Authorize]
+@rendermode InteractiveServer
 
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
-    <h2 class="mb-4" style="color: #2C5F8D;">Patients</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0" style="color: #2C5F8D;">Patients</h2>
+        @if (canCreatePatients)
+        {
+            <a href="/patients/create" class="btn btn-primary">
+                <span class="bi bi-plus-circle me-1"></span>
+                Create New Patient
+            </a>
+        }
+    </div>
 
     <div class="mb-4">
-        <input type="text" class="form-control" placeholder="Search by name or MRN..." @bind="searchText" />
+        <input type="text" class="form-control" placeholder="Search by name or MRN..." @bind="searchText" @bind:event="oninput" />
     </div>
 
     @if (filteredPatients?.Any() != true)
@@ -45,6 +59,8 @@
 @code {
     private string searchText = string.Empty;
     private List<Patient> patients = new();
+    private bool canCreatePatients = false;
+
     private IEnumerable<Patient> filteredPatients => patients
         .Where(p => string.IsNullOrWhiteSpace(searchText)
                     || p.MedicalRecordNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase)
@@ -53,6 +69,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        canCreatePatients = await AuthService.HasPermissionAsync(Permissions.Patients_Create);
+
         patients = await Db.Patients
             .Include(p => p.User)
             .ToListAsync();
