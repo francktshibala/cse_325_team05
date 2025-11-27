@@ -73,7 +73,8 @@
 @code {
     private Patient newPatient = new()
     {
-        User = new ApplicationUser()
+        User = new ApplicationUser(),
+        DateOfBirth = DateTime.Today
     };
 
     private async Task HandleValidSubmit()
