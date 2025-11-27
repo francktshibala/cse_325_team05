@@ -1,0 +1,195 @@
+@page "/providers/{Id:int}"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ApplicationDbContext Db
+@inject IAppointmentService AppointmentService
+@inject AuthorizationService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Provider Profile - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (provider is null)
+    {
+        <div class="alert alert-warning">Provider not found.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-12 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 style="color: #2C5F8D;">@provider.User.FirstName @provider.User.LastName</h3>
+                        <p class="text-muted mb-1"><strong>Specialty:</strong> @provider.Specialty</p>
+                        <p class="text-muted mb-1"><strong>Type:</strong> @provider.ProviderType</p>
+                        <p class="text-muted mb-1"><strong>License:</strong> @provider.LicenseNumber</p>
+                        <p class="text-muted"><strong>Status:</strong> @(provider.IsActive ? "Active" : "Inactive")</p>
+                        <a class="btn btn-outline-primary btn-sm" href="/appointments/availability?providerId=@provider.Id&date=@DateTime.Today.ToString("o")">Find Availability</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-8">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="mb-3">Weekly Availability</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Time Windows</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var day in Enum.GetValues<DayOfWeek>())
+                                    {
+                                        var daySlots = weeklySchedules.TryGetValue(day, out var slots) ? slots : new List<(TimeSpan start, TimeSpan end)>();
+                                        <tr>
+                                            <td>@day</td>
+                                            <td>
+                                                @if (daySlots.Count == 0)
+                                                {
+                                                    <span class="text-muted">No availability</span>
+                                                }
+                                                else
+                                                {
+                                                    @for (var i = 0; i < daySlots.Count; i++)
+                                                    {
+                                                        var s = daySlots[i];
+                                                        <span>@s.start.ToString(@"hh\:mm") - @s.end.ToString(@"hh\:mm")</span>
+                                                        @if (i < daySlots.Count - 1)
+                                                        {
+                                                            <span class="text-muted"> • </span>
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="m-0">Upcoming Available Slots</h5>
+                    <div class="d-flex gap-2">
+                        <label class="form-label m-0 me-2">Duration</label>
+                        <select class="form-control form-control-sm" style="width: 120px;" @bind="slotMinutes">
+                            <option value="15">15 min</option>
+                            <option value="20">20 min</option>
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (loadingSlots)
+                {
+                    <div class="text-muted">Loading available slots...</div>
+                }
+                else if (nextSlots.Count == 0)
+                {
+                    <div class="alert alert-info">No available slots in the next @scanDays days.</div>
+                }
+                else
+                {
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                        @foreach (var s in nextSlots)
+                        {
+                            <div class="col">
+                                <div class="card h-100">
+                                    <div class="card-body d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="text-muted" style="font-size: 0.9rem;">@s.ToString("dddd, MMM dd")</div>
+                                            <div style="font-size: 1.25rem; font-weight: 600; color: #2C5F8D;">@s.ToString("h:mm tt")</div>
+                                        </div>
+                                        <div class="d-grid mt-3">
+                                            <a class="btn btn-outline-primary"
+                                               href="/appointments/book?providerId=@provider.Id&date=@s.ToString("o")&duration=@slotMinutes">
+                                                Book
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Provider? provider;
+    private Dictionary<DayOfWeek, List<(TimeSpan start, TimeSpan end)>> weeklySchedules = new();
+    private List<DateTime> nextSlots = new();
+    private int slotMinutes = 30;
+    private int scanDays = 14;
+    private bool loadingSlots = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        provider = await Db.Providers
+            .Include(p => p.User)
+            .Include(p => p.Schedules)
+            .FirstOrDefaultAsync(p => p.Id == Id);
+
+        if (provider == null) return;
+
+        weeklySchedules = provider.Schedules
+            .Where(s => s.IsAvailable)
+            .GroupBy(s => s.DayOfWeek)
+            .ToDictionary(
+                g => g.Key,
+                g => g
+                    .OrderBy(s => s.StartTime)
+                    .Select(s => (s.StartTime, s.EndTime))
+                    .ToList()
+            );
+
+        await LoadNextSlots();
+    }
+
+    private async Task LoadNextSlots()
+    {
+        nextSlots.Clear();
+        loadingSlots = true;
+        if (provider == null)
+        {
+            loadingSlots = false;
+            return;
+        }
+
+        var today = DateTime.Today;
+        var collected = new List<DateTime>();
+        for (int i = 0; i < scanDays; i++)
+        {
+            var date = today.AddDays(i);
+            var slots = await AppointmentService.GetAvailableSlotsAsync(provider.Id, date, slotMinutes);
+            foreach (var s in slots)
+            {
+                collected.Add(s);
+                if (collected.Count >= 12) break;
+            }
+            if (collected.Count >= 12) break;
+        }
+        nextSlots = collected;
+        loadingSlots = false;
+    }
+}
+
+

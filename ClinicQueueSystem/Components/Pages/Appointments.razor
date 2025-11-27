@@ -165,7 +165,9 @@
                                 <div class="mb-2">
                                     <strong>Provider:</strong><br />
                                     <span style="color: #495057;">
-                                        @appointment.Provider.User.FirstName @appointment.Provider.User.LastName
+                                        <a href="/providers/@appointment.ProviderId">
+                                            @appointment.Provider.User.FirstName @appointment.Provider.User.LastName
+                                        </a>
                                         @if (!string.IsNullOrEmpty(appointment.Provider.Specialty))
                                         {
                                             <text> - @appointment.Provider.Specialty</text>
