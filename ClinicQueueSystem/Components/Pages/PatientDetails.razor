@@ -1,0 +1,56 @@
+@page "/patients/{Id:int}"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+
+<PageTitle>Patient Details - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (patient == null)
+    {
+        <div class="alert alert-warning">
+            Patient not found.
+        </div>
+    }
+    else
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title" style="color: #2C5F8D;">
+                    @patient.User.FirstName @patient.User.LastName
+                </h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Medical Record Number:</strong> @patient.MedicalRecordNumber</p>
+                <p><strong>Date of Birth:</strong> @patient.DateOfBirth.ToString("yyyy-MM-dd")</p>
+                <p><strong>Gender:</strong> @patient.Gender</p>
+                <p><strong>Phone:</strong> @patient.PhoneNumber</p>
+                <p><strong>Email:</strong> @patient.User.Email</p>
+                <p><strong>Address:</strong> @patient.Address</p>
+                <p><strong>Emergency Contact:</strong> @patient.EmergencyContact</p>
+                <p><strong>Emergency Phone:</strong> @patient.EmergencyPhone</p>
+            </div>
+            <div class="card-footer">
+                <a href="/patients/edit/@patient.Id" class="btn btn-primary">Edit Patient</a>
+                <a href="/patients" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Patient? patient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load patient including User info
+        patient = await Db.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == Id);
+    }
+}

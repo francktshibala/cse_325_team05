@@ -1,0 +1,102 @@
+@page "/patients/edit/{Id:int}"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Patient - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (patient == null)
+    {
+        <div class="alert alert-warning">Patient not found.</div>
+    }
+    else
+    {
+        <h2 style="color: #2C5F8D; margin-bottom: 1rem;">Edit Patient</h2>
+
+        <EditForm Model="patient" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label class="form-label">First Name</label>
+                <InputText class="form-control" @bind-Value="patient.User.FirstName" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <InputText class="form-control" @bind-Value="patient.User.LastName" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <InputText type="email" class="form-control" @bind-Value="patient.User.Email" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Medical Record Number</label>
+                <InputText class="form-control" @bind-Value="patient.MedicalRecordNumber" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <InputText class="form-control" @bind-Value="patient.PhoneNumber" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <InputDate class="form-control" @bind-Value="patient.DateOfBirth" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Gender</label>
+                <InputText class="form-control" @bind-Value="patient.Gender" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <InputText class="form-control" @bind-Value="patient.Address" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Emergency Contact</label>
+                <InputText class="form-control" @bind-Value="patient.EmergencyContact" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Emergency Phone</label>
+                <InputText class="form-control" @bind-Value="patient.EmergencyPhone" />
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+            <a href="/patients" class="btn btn-secondary mt-3 ml-2">Cancel</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Patient? patient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        patient = await Db.Patients
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == Id);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (patient != null)
+        {
+            Db.Patients.Update(patient);
+            await Db.SaveChangesAsync();
+            Navigation.NavigateTo("/patients");
+        }
+    }
+}

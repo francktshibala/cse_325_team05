@@ -1,15 +1,31 @@
 @inherits LayoutComponentBase
+@inject Microsoft.JSInterop.IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+    <div class="sidebar @(isSidebarCollapsed ? "collapsed" : "") @(isMobileSidebarOpen ? "open" : "")">
+        <NavMenu OnNavigate="CloseMobileSidebar" />
     </div>
 
     <main>
         <div class="top-row px-4">
             <div class="d-flex justify-content-between align-items-center w-100 flex-wrap gap-2">
-                <h5 class="m-0 text-white d-none d-md-block">Clinic Queue & Appointments System</h5>
-                <h5 class="m-0 text-white d-md-none" style="font-size: 0.9rem;">Clinic Queue</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-outline-light d-none d-md-inline-flex align-items-center justify-content-center sidebar-toggle-btn"
+                            @onclick="ToggleSidebar"
+                            aria-label="Toggle sidebar"
+                            title="Toggle sidebar">
+                        <span class="sidebar-toggle-icon"></span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light d-inline-flex d-md-none align-items-center justify-content-center sidebar-hamburger-btn"
+                            @onclick="ToggleMobileSidebar"
+                            aria-label="Open menu"
+                            title="Open menu">
+                        <span class="hamburger-icon"></span>
+                    </button>
+                    <h5 class="m-0 text-white d-none d-md-block">Clinic Queue & Appointments System</h5>
+                    <h5 class="m-0 text-white d-md-none" style="font-size: 0.9rem;">Clinic Queue</h5>
+                </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <AuthorizeView>
                         <Authorized>
@@ -31,9 +47,81 @@
         </article>
     </main>
 </div>
+<div class="sidebar-overlay @(isMobileSidebarOpen ? "show" : "")" @onclick="CloseMobileSidebar"></div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">X</a>
 </div>
+
+@code {
+    private bool isSidebarCollapsed = false;
+    private bool isMobileSidebarOpen = false;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var val = await JS.InvokeAsync<string>("appStorage.get", "sidebar:collapsed");
+                isSidebarCollapsed = string.Equals(val, "1", StringComparison.Ordinal);
+                StateHasChanged();
+            }
+            catch
+            {
+                // ignore if JS not available
+            }
+        }
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (isMobileSidebarOpen)
+        {
+            isMobileSidebarOpen = false;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ToggleSidebar()
+    {
+        isSidebarCollapsed = !isSidebarCollapsed;
+        try
+        {
+            await JS.InvokeVoidAsync("appStorage.set", "sidebar:collapsed", isSidebarCollapsed ? "1" : "0");
+        }
+        catch
+        {
+            // ignore if JS not available
+        }
+    }
+
+    private void ToggleMobileSidebar()
+    {
+        isMobileSidebarOpen = !isMobileSidebarOpen;
+    }
+
+    private void CloseMobileSidebar()
+    {
+        isMobileSidebarOpen = false;
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            NavigationManager.LocationChanged -= HandleLocationChanged;
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+}
