@@ -374,9 +374,38 @@ The following predefined policies are available:
 - [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity)
 - [Bootstrap 5 Documentation](https://getbootstrap.com/docs/5.0/)
 
+## 🚀 Live Deployment
+
+The application is deployed and accessible at:
+
+**Production URL:** https://clinic-queue-team05-h2dtephrdjexbfd9.canadacentral-01.azurewebsites.net/
+
+**Platform:** Microsoft Azure App Service
+**Region:** Canada Central
+**Runtime:** .NET 8.0
+**Deployment:** GitHub Actions CI/CD
+
+### Test Accounts
+
+**Admin:**
+- Email: admin@clinicqueue.com
+- Password: Admin123!
+
+**Doctors:**
+- Email: dr.johnson@clinicqueue.com / Password: Doctor123! (General Medicine, Mon-Fri 9-5)
+- Email: dr.chen@clinicqueue.com / Password: Doctor123! (Pediatrics, Mon-Thu 8-4)
+- Email: dr.rodriguez@clinicqueue.com / Password: Doctor123! (Cardiology, Tue-Sat 10-6)
+
+**Patients:**
+- Email: john.doe@example.com / Password: Patient123!
+- Email: mary.smith@example.com / Password: Patient123!
+
+**Important:** These are test accounts for demonstration purposes only.
+
 ## Project Links
 
 - **Repository:** https://github.com/francktshibala/cse_325_team05
+- **Live Application:** https://clinic-queue-team05-h2dtephrdjexbfd9.canadacentral-01.azurewebsites.net/
 - **Trello Board:** https://trello.com/b/UHH3f7Lh/team-5
 - **Implementation Plan:** See team shared documents
 
