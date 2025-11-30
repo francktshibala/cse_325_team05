@@ -1,0 +1,626 @@
+@page "/schedules/manage"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Manage Schedules - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 class="mb-3" style="color: #2C5F8D;">Manage Provider Schedules</h2>
+
+    @if (!canView)
+    {
+        <div class="alert alert-warning">You do not have permission to view schedules.</div>
+    }
+    else
+    {
+        <div class="row g-3 align-items-end mb-4">
+            <div class="col-md-4">
+                <label class="form-label">Provider</label>
+                <select class="form-control" @bind="selectedProviderId" disabled="@(!canSwitchProvider)">
+                    @foreach (var p in providers)
+                    {
+                        <option value="@p.Id">@p.User.FirstName @p.User.LastName (@p.Specialty)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">View date (includes dated exceptions)</label>
+                <div class="d-flex gap-2">
+                    <input type="date" class="form-control"
+                           value="@selectedDateString"
+                           @onchange="OnDateChanged" />
+                    <button type="button" class="btn btn-outline-secondary"
+                            title="Clear date to view defaults only"
+                            @onclick="ClearSelectedDate">Clear</button>
+                </div>
+                @if (selectedDate.HasValue)
+                {
+                    <div class="form-text">
+                        Viewing schedules effective on @selectedDate.Value.ToString("yyyy-MM-dd"). Saving updates defaults only.
+                    </div>
+                }
+            </div>
+            <div class="col-md-4 text-end d-grid d-md-block">
+                <button class="btn btn-primary me-2" disabled="@(!canManage || saving)" @onclick="SaveAsync">
+                    @if (saving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Save Changes
+                </button>
+                @if (selectedDate.HasValue)
+                {
+                    <button class="btn btn-success me-2" disabled="@(!canManage || saving)" @onclick="SaveExceptionAsync">
+                        @if (saving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Save Date Exception
+                    </button>
+                }
+                <button class="btn btn-outline-secondary" disabled="@(saving)" @onclick="ReloadAsync">Reload</button>
+                @if (selectedDate.HasValue)
+                {
+                    <div class="form-text mt-1">
+                        Saves only @selectedDate.Value.DayOfWeek for @selectedDate.Value.ToString("yyyy-MM-dd").
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert @messageClass">@message</div>
+        }
+
+        @if (loading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var day in daySchedules)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100" style="border: 1px solid #e9ecef; border-radius: 8px;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0" style="color: #2C5F8D;">@day.Day</h5>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="off_@day.Day"
+                                               checked="@day.IsOff"
+                                               @onchange="(ChangeEventArgs e) => { var val = false; bool.TryParse(e.Value?.ToString(), out val); day.IsOff = val; OnOffToggled(day); }" />
+                                        <label class="form-check-label" for="off_@day.Day">OFF</label>
+                                    </div>
+                                </div>
+
+                                @if (day.IsOff)
+                                {
+                                    <div class="text-muted">No availability</div>
+                                }
+                                else
+                                {
+                                    @for (int i = 0; i < day.Ranges.Count; i++)
+                                    {
+                                        var r = day.Ranges[i];
+                                        <div class="row g-2 align-items-center mb-2">
+                                            <div class="col-5">
+                                                <label class="form-label mb-1">Start</label>
+                                                <input type="time" class="form-control" step="300"
+                                                       value="@r.Start"
+                                                       @onchange="(ChangeEventArgs e) => r.Start = e.Value?.ToString() ?? string.Empty" />
+                                            </div>
+                                            <div class="col-5">
+                                                <label class="form-label mb-1">End</label>
+                                                <input type="time" class="form-control" step="300"
+                                                       value="@r.End"
+                                                       @onchange="(ChangeEventArgs e) => r.End = e.Value?.ToString() ?? string.Empty" />
+                                            </div>
+                                            <div class="col-2 d-grid">
+                                                <button type="button" class="btn btn-outline-danger mt-3" title="Remove" @onclick="(() => RemoveRange(day, i))">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="d-grid">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" @onclick="(() => AddRange(day))">Add Time Range</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Provider> providers = new();
+    private int _selectedProviderId;
+    private int selectedProviderId
+    {
+        get => _selectedProviderId;
+        set
+        {
+            if (_selectedProviderId != value)
+            {
+                _selectedProviderId = value;
+                _ = LoadSchedulesAsync();
+            }
+        }
+    }
+    private bool canView = false;
+    private bool canManage = false;
+    private bool canSwitchProvider = false;
+    private bool loading = true;
+    private bool saving = false;
+    private string message = string.Empty;
+    private string messageClass = "alert-info";
+
+    private readonly List<DayScheduleModel> daySchedules = new();
+    private DateTime? selectedDate = DateTime.Today;
+    private string selectedDateString => selectedDate.HasValue ? selectedDate.Value.ToString("yyyy-MM-dd") : string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        canManage = await AuthService.HasPermissionAsync(Permissions.Schedules_Manage);
+        var canViewOwn = await AuthService.HasPermissionAsync(Permissions.Schedules_ViewOwn);
+        var canViewAll = await AuthService.HasPermissionAsync(Permissions.Schedules_View);
+
+        canView = canViewAll || canViewOwn || canManage;
+        if (!canView)
+        {
+            loading = false;
+            return;
+        }
+
+        daySchedules.Clear();
+        foreach (var d in Enum.GetValues<DayOfWeek>().OrderBy(x => ((int)x + 6) % 7)) // Monday first
+        {
+            daySchedules.Add(new DayScheduleModel { Day = d, IsOff = true });
+        }
+
+        await LoadProvidersAsync(canManage);
+        await LoadSchedulesAsync();
+        loading = false;
+    }
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+        {
+            selectedDate = dt.Date;
+        }
+        else
+        {
+            selectedDate = null;
+        }
+        _ = LoadSchedulesAsync();
+    }
+
+    private void ClearSelectedDate()
+    {
+        selectedDate = null;
+        _ = LoadSchedulesAsync();
+    }
+
+    private async Task LoadProvidersAsync(bool allowAll)
+    {
+        if (allowAll)
+        {
+            providers = await Db.Providers
+                .Include(p => p.User)
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
+                .ToListAsync();
+            canSwitchProvider = true;
+        }
+        else
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var currentUser = authState.User.Identity?.IsAuthenticated == true ? authState.User : null;
+            if (currentUser == null)
+            {
+                providers = new();
+                return;
+            }
+
+            var userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            var myProvider = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == userId);
+            if (myProvider != null)
+            {
+                providers = new() { myProvider };
+            }
+        }
+
+        if (providers.Count > 0)
+        {
+            selectedProviderId = providers.First().Id;
+        }
+    }
+
+    private async Task LoadSchedulesAsync()
+    {
+        if (selectedProviderId == 0)
+        {
+            return;
+        }
+
+        foreach (var d in daySchedules)
+        {
+            d.Ranges.Clear();
+            d.IsOff = true;
+        }
+
+        // Defaults (no dates)
+        var existing = await Db.Schedules
+            .Where(s => s.ProviderId == selectedProviderId
+                        && !s.EffectiveDate.HasValue
+                        && !s.ExpirationDate.HasValue)
+            .ToListAsync();
+        existing = existing.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime).ToList(); // client sort
+
+        foreach (var group in existing.GroupBy(s => s.DayOfWeek))
+        {
+            var dayModel = daySchedules.First(ds => ds.Day == group.Key);
+            var active = group.Where(g => g.IsAvailable).ToList();
+            if (active.Count == 0)
+            {
+                dayModel.IsOff = true;
+                continue;
+            }
+            dayModel.IsOff = false;
+            foreach (var r in active)
+            {
+                dayModel.Ranges.Add(new TimeRangeModel
+                {
+                    Start = TimeOnly.FromTimeSpan(r.StartTime).ToString("HH':'mm"),
+                    End = TimeOnly.FromTimeSpan(r.EndTime).ToString("HH':'mm")
+                });
+            }
+        }
+
+        // Overlay exceptions if date selected
+        if (selectedDate.HasValue)
+        {
+            var date = selectedDate.Value.Date;
+            var exceptions = await Db.Schedules
+                .Where(s => s.ProviderId == selectedProviderId
+                            && s.EffectiveDate.HasValue
+                            && s.EffectiveDate.Value.Date <= date
+                            && (!s.ExpirationDate.HasValue || s.ExpirationDate.Value.Date >= date))
+                .ToListAsync();
+            exceptions = exceptions.OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime).ToList();
+
+            foreach (var group in exceptions.GroupBy(s => s.DayOfWeek))
+            {
+                var dayModel = daySchedules.First(ds => ds.Day == group.Key);
+                var singleDay = group.Where(g => g.EffectiveDate.HasValue
+                                                 && g.ExpirationDate.HasValue
+                                                 && g.EffectiveDate.Value.Date == date
+                                                 && g.ExpirationDate.Value.Date == date).ToList();
+                var source = singleDay.Any() ? singleDay : group.ToList();
+                dayModel.Ranges.Clear();
+                var active = source.Where(g => g.IsAvailable).ToList();
+                if (active.Count == 0)
+                {
+                    dayModel.IsOff = true;
+                    continue;
+                }
+                dayModel.IsOff = false;
+                foreach (var r in active)
+                {
+                    dayModel.Ranges.Add(new TimeRangeModel
+                    {
+                        Start = TimeOnly.FromTimeSpan(r.StartTime).ToString("HH':'mm"),
+                        End = TimeOnly.FromTimeSpan(r.EndTime).ToString("HH':'mm")
+                    });
+                }
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!canManage)
+        {
+            message = "You do not have permission to make changes.";
+            messageClass = "alert-warning";
+            return;
+        }
+        if (selectedProviderId == 0)
+        {
+            message = "No provider selected.";
+            messageClass = "alert-warning";
+            return;
+        }
+
+        // Validate inputs
+        foreach (var day in daySchedules)
+        {
+            if (day.IsOff)
+            {
+                continue;
+            }
+            if (day.Ranges.Count == 0)
+            {
+                message = $"Please add at least one time range for {day.Day} or mark it OFF.";
+                messageClass = "alert-warning";
+                return;
+            }
+            var parsed = new List<(TimeSpan start, TimeSpan end)>();
+            foreach (var r in day.Ranges)
+            {
+                if (!TimeSpan.TryParse(r.Start, out var s) || !TimeSpan.TryParse(r.End, out var e))
+                {
+                    message = $"Invalid time format on {day.Day}.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+                if (e <= s)
+                {
+                    message = $"{day.Day}: End must be after Start.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+                parsed.Add((s, e));
+            }
+            var ordered = parsed.OrderBy(x => x.start).ToList();
+            for (int i = 1; i < ordered.Count; i++)
+            {
+                if (ordered[i].start < ordered[i - 1].end)
+                {
+                    message = $"{day.Day}: Time ranges overlap.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+            }
+        }
+
+        saving = true;
+        message = string.Empty;
+        try
+        {
+            // Replace defaults for this provider
+            var existing = await Db.Schedules
+                .Where(s => s.ProviderId == selectedProviderId
+                            && !s.EffectiveDate.HasValue
+                            && !s.ExpirationDate.HasValue)
+                .ToListAsync();
+            Db.Schedules.RemoveRange(existing);
+
+            foreach (var day in daySchedules)
+            {
+                if (day.IsOff)
+                {
+                    continue;
+                }
+                foreach (var r in day.Ranges)
+                {
+                    var startTs = TimeSpan.Parse(r.Start);
+                    var endTs = TimeSpan.Parse(r.End);
+                    Db.Schedules.Add(new Schedule
+                    {
+                        ProviderId = selectedProviderId,
+                        DayOfWeek = day.Day,
+                        StartTime = startTs,
+                        EndTime = endTs,
+                        IsAvailable = true,
+                        EffectiveDate = null,
+                        ExpirationDate = null
+                    });
+                }
+            }
+            await Db.SaveChangesAsync();
+            message = "Schedules saved successfully.";
+            messageClass = "alert-success";
+        }
+        catch (Exception ex)
+        {
+            message = $"Error saving schedules: {ex.Message}";
+            messageClass = "alert-danger";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private async Task SaveExceptionAsync()
+    {
+        if (!canManage)
+        {
+            message = "You do not have permission to make changes.";
+            messageClass = "alert-warning";
+            return;
+        }
+        if (selectedProviderId == 0)
+        {
+            message = "No provider selected.";
+            messageClass = "alert-warning";
+            return;
+        }
+        if (!selectedDate.HasValue)
+        {
+            message = "Select a date to save an exception.";
+            messageClass = "alert-warning";
+            return;
+        }
+
+        var date = selectedDate.Value.Date;
+        var targetDay = date.DayOfWeek;
+        var day = daySchedules.First(d => d.Day == targetDay);
+
+        // Validate day content
+        var parsed = new List<(TimeSpan start, TimeSpan end)>();
+        if (!day.IsOff)
+        {
+            foreach (var r in day.Ranges)
+            {
+                if (!TimeSpan.TryParse(r.Start, out var s) || !TimeSpan.TryParse(r.End, out var e))
+                {
+                    message = $"Invalid time format on {day.Day}.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+                if (e <= s)
+                {
+                    message = $"{day.Day}: End must be after Start.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+                parsed.Add((s, e));
+            }
+            var ordered = parsed.OrderBy(x => x.start).ToList();
+            for (int i = 1; i < ordered.Count; i++)
+            {
+                if (ordered[i].start < ordered[i - 1].end)
+                {
+                    message = $"{day.Day}: Time ranges overlap.";
+                    messageClass = "alert-warning";
+                    return;
+                }
+            }
+        }
+
+        saving = true;
+        message = string.Empty;
+        try
+        {
+            // Remove existing single-day exceptions for this date
+            var existingSingles = await Db.Schedules
+                .Where(s => s.ProviderId == selectedProviderId
+                            && s.DayOfWeek == targetDay
+                            && s.EffectiveDate.HasValue
+                            && s.ExpirationDate.HasValue
+                            && s.EffectiveDate.Value.Date == date
+                            && s.ExpirationDate.Value.Date == date)
+                .ToListAsync();
+            if (existingSingles.Count > 0)
+            {
+                Db.Schedules.RemoveRange(existingSingles);
+            }
+
+            if (!day.IsOff)
+            {
+                foreach (var (start, end) in parsed)
+                {
+                    Db.Schedules.Add(new Schedule
+                    {
+                        ProviderId = selectedProviderId,
+                        DayOfWeek = targetDay,
+                        StartTime = start,
+                        EndTime = end,
+                        IsAvailable = true,
+                        EffectiveDate = date,
+                        ExpirationDate = date
+                    });
+                }
+            }
+            else
+            {
+                // Add a single "off" marker
+                Db.Schedules.Add(new Schedule
+                {
+                    ProviderId = selectedProviderId,
+                    DayOfWeek = targetDay,
+                    StartTime = TimeSpan.Zero,
+                    EndTime = TimeSpan.Zero,
+                    IsAvailable = false,
+                    EffectiveDate = date,
+                    ExpirationDate = date
+                });
+            }
+            await Db.SaveChangesAsync();
+            message = $"Date exception saved for {targetDay} on {date:yyyy-MM-dd}.";
+            messageClass = "alert-success";
+            await LoadSchedulesAsync();
+        }
+        catch (Exception ex)
+        {
+            message = $"Error saving date exception: {ex.Message}";
+            messageClass = "alert-danger";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        loading = true;
+        message = string.Empty;
+        await LoadSchedulesAsync();
+        loading = false;
+    }
+
+    private void AddRange(DayScheduleModel day)
+    {
+        day.IsOff = false;
+        var defaultStart = "09:00";
+        var defaultEnd = "17:00";
+        if (day.Ranges.Count > 0)
+        {
+            if (TimeSpan.TryParse(day.Ranges.Last().End, out var lastEnd))
+            {
+                var nextStart = lastEnd;
+                var nextEnd = lastEnd.Add(TimeSpan.FromHours(1));
+                defaultStart = new TimeOnly(nextStart.Hours, nextStart.Minutes).ToString("HH':'mm");
+                defaultEnd = new TimeOnly(nextEnd.Hours % 24, nextEnd.Minutes).ToString("HH':'mm");
+            }
+        }
+        day.Ranges.Add(new TimeRangeModel { Start = defaultStart, End = defaultEnd });
+    }
+
+    private void RemoveRange(DayScheduleModel day, int index)
+    {
+        if (index >= 0 && index < day.Ranges.Count)
+        {
+            day.Ranges.RemoveAt(index);
+        }
+        if (day.Ranges.Count == 0)
+        {
+            day.IsOff = true;
+        }
+    }
+
+    private void OnOffToggled(DayScheduleModel day)
+    {
+        if (day.IsOff)
+        {
+            day.Ranges.Clear();
+        }
+        else if (day.Ranges.Count == 0)
+        {
+            day.Ranges.Add(new TimeRangeModel { Start = "09:00", End = "17:00" });
+        }
+    }
+
+    private sealed class DayScheduleModel
+    {
+        public DayOfWeek Day { get; set; }
+        public bool IsOff { get; set; }
+        public List<TimeRangeModel> Ranges { get; } = new();
+    }
+
+    private sealed class TimeRangeModel
+    {
+        public string Start { get; set; } = "09:00";
+        public string End { get; set; } = "17:00";
+    }
+}
+
+

@@ -1,0 +1,152 @@
+@page "/providers"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+
+<PageTitle>Providers - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 class="mb-3" style="color: #2C5F8D;">Providers</h2>
+
+    @if (!canView)
+    {
+        <div class="alert alert-warning">You do not have permission to view providers.</div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2">
+                <input class="form-control" style="max-width: 280px;" placeholder="Search name or email" @bind="search" />
+                <select class="form-control" style="max-width: 160px;" @bind="statusFilter">
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <button class="btn btn-outline-primary" @onclick="LoadAsync">Apply</button>
+            </div>
+        </div>
+
+        @if (loading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (items.Count == 0)
+        {
+            <div class="alert alert-info">No providers found.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">Name</th>
+                            <th>Email</th>
+                            <th>Type</th>
+                            <th>Specialty</th>
+                            <th>License</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in items)
+                        {
+                            <tr>
+                                <td style="white-space: nowrap;">@p.User.FirstName @p.User.LastName</td>
+                                <td>@p.User.Email</td>
+                                <td>@p.ProviderType</td>
+                                <td>@p.Specialty</td>
+                                <td>@p.LicenseNumber</td>
+                                <td>
+                                    <span class="badge @(p.IsActive ? "bg-success" : "bg-secondary")">@(p.IsActive ? "Active" : "Inactive")</span>
+                                </td>
+                                <td class="text-end" style="white-space: nowrap;">
+                                    <button class="btn btn-sm @(p.IsActive ? "btn-outline-secondary" : "btn-outline-success")" disabled="@(!canEdit)" @onclick="() => ToggleActiveAsync(p.Id, !p.IsActive)">
+                                        @(p.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private bool canView = false;
+    private bool canEdit = false;
+    private string search = string.Empty;
+    private string statusFilter = "all";
+    private List<Provider> items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        canView = await AuthService.HasPermissionAsync(Permissions.Users_View);
+        canEdit = await AuthService.HasPermissionAsync(Permissions.Users_Edit);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!canView)
+        {
+            loading = false;
+            return;
+        }
+        loading = true;
+        StateHasChanged();
+
+        var q = Db.Providers
+            .Include(p => p.User)
+            .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            q = q.Where(p => p.User.FirstName.ToLower().Contains(term)
+                || p.User.LastName.ToLower().Contains(term)
+                || (p.User.Email ?? string.Empty).ToLower().Contains(term));
+        }
+        if (statusFilter == "active")
+        {
+            q = q.Where(p => p.IsActive);
+        }
+        else if (statusFilter == "inactive")
+        {
+            q = q.Where(p => !p.IsActive);
+        }
+
+        items = await q.ToListAsync();
+        loading = false;
+    }
+
+    private async Task ToggleActiveAsync(int providerId, bool newValue)
+    {
+        if (!canEdit)
+        {
+            return;
+        }
+        var provider = await Db.Providers.FirstOrDefaultAsync(p => p.Id == providerId);
+        if (provider == null)
+        {
+            return;
+        }
+        provider.IsActive = newValue;
+        await Db.SaveChangesAsync();
+        await LoadAsync();
+    }
+}
+
+
