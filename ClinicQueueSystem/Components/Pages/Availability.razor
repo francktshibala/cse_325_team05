@@ -15,7 +15,7 @@
     <div class="row g-3 align-items-end mb-4">
         <div class="col-md-4">
             <label class="form-label">Provider</label>
-            <select class="form-control" @bind="selectedProviderId">
+            <select class="form-control" @bind="selectedProviderId" @bind:after="OnAvailabilityInputsChanged">
                 @foreach (var p in providers)
                 {
                     <option value="@p.Id">@p.User.FirstName @p.User.LastName (@p.Specialty)</option>
@@ -24,11 +24,11 @@
         </div>
         <div class="col-md-3">
             <label class="form-label">Date</label>
-            <InputDate @bind-Value="selectedDate" class="form-control" />
+            <InputDate @bind-Value="selectedDate" class="form-control" @bind-Value:after="OnAvailabilityInputsChanged" />
         </div>
         <div class="col-md-3">
             <label class="form-label">Slot Duration (minutes)</label>
-            <input type="number" class="form-control" @bind="slotMinutes" min="10" step="5" />
+            <input type="number" class="form-control" @bind="slotMinutes" min="10" step="5" @bind:after="OnAvailabilityInputsChanged" />
         </div>
         <div class="col-md-2 d-grid">
             <button class="btn btn-primary" @onclick="LoadSlots">Load Slots</button>
@@ -109,6 +109,11 @@
         StateHasChanged();
         availableSlots = (await AppointmentService.GetAvailableSlotsAsync(selectedProviderId, selectedDate, slotMinutes)).ToList();
         loading = false;
+    }
+
+    private void OnAvailabilityInputsChanged()
+    {
+        _ = LoadSlots();
     }
 }
 

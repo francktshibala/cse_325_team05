@@ -62,9 +62,9 @@
                         </div>
                     }
 
-                    <div class="form-group mb-3">
+                        <div class="form-group mb-3">
                         <label class="form-label">Provider</label>
-                        <select class="form-control" @bind="bookModel.ProviderId">
+                            <select class="form-control" @bind="bookModel.ProviderId" @bind:after="OnInputsChanged">
                             <option value="">-- Select Provider --</option>
                             @foreach (var pr in providers)
                             {
@@ -76,12 +76,12 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Date</label>
-                            <InputDate @bind-Value="bookModel.Date" class="form-control" />
+                            <InputDate @bind-Value="bookModel.Date" class="form-control" @bind-Value:after="OnInputsChanged" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Duration (minutes)</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" @bind="bookModel.DurationMinutes" min="10" step="5" />
+                                <input type="number" class="form-control" @bind="bookModel.DurationMinutes" min="10" step="5" @bind:after="OnInputsChanged" />
                                 <button class="btn btn-outline-primary" type="button" @onclick="LoadSlotsInternalAsync">Reload Slots</button>
                             </div>
                         </div>
@@ -103,7 +103,7 @@
                                 <option value="">-- Select Time --</option>
                                 @foreach (var s in availableSlots)
                                 {
-                                    <option value="@s.ToString("o")">@s.ToString("h:mm tt")</option>
+                                    <option value="@s.ToString("O")">@s.ToString("h:mm tt")</option>
                                 }
                             </select>
                         }
@@ -211,6 +211,10 @@
         await LoadSlotsInternalAsync();
     }
 
+    private void OnInputsChanged()
+    {
+        _ = LoadSlotsInternalAsync();
+    }
     private async Task LoadSlotsInternalAsync()
     {
         availableSlots.Clear();
@@ -242,7 +246,7 @@
             errorMessage = "Please select a provider.";
             return;
         }
-        if (string.IsNullOrWhiteSpace(selectedSlotString) || !DateTime.TryParse(selectedSlotString, out var chosenStart))
+        if (string.IsNullOrWhiteSpace(selectedSlotString) || !DateTime.TryParseExact(selectedSlotString, "O", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var chosenStart))
         {
             errorMessage = "Please select an available time.";
             return;
