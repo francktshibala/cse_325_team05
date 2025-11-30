@@ -60,6 +60,26 @@
             </div>
         }
 
+        @if (canViewSchedules)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="schedules/manage" @onclick="HandleNavClick">
+                    <span class="bi bi-check-square-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Schedules</span>
+                </NavLink>
+            </div>
+        }
+
+        @if (canViewProviders)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="providers" @onclick="HandleNavClick">
+                    <span class="bi bi-people-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Providers</span>
+                </NavLink>
+            </div>
+        }
+
         @if (canViewAdmin)
         {
             <div class="nav-item px-3">
@@ -77,6 +97,8 @@
     private bool canViewQueue = false;
     private bool canCheckIn = false;
     private bool canViewAdmin = false;
+    private bool canViewSchedules = false;
+    private bool canViewProviders = false;
 
 
     [Parameter]
@@ -88,6 +110,13 @@
         canViewQueue = await AuthService.HasPermissionAsync(Permissions.Queue_View);
         canCheckIn = await AuthService.HasPermissionAsync(Permissions.Queue_CheckIn);
         canViewAdmin = await AuthService.HasPermissionAsync(Permissions.Users_View);
+        // Schedules visible if user can view, manage, or view own
+        var canViewAll = await AuthService.HasPermissionAsync(Permissions.Schedules_View);
+        var canManage = await AuthService.HasPermissionAsync(Permissions.Schedules_Manage);
+        var canViewOwn = await AuthService.HasPermissionAsync(Permissions.Schedules_ViewOwn);
+        canViewSchedules = canViewAll || canManage || canViewOwn;
+        // Providers visible under user management view
+        canViewProviders = await AuthService.HasPermissionAsync(Permissions.Users_View);
     }
 
     private Task HandleNavClick()
