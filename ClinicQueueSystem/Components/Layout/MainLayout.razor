@@ -28,8 +28,29 @@
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <AuthorizeView>
-                        <Authorized>
-                            <span class="text-white d-none d-sm-inline" style="font-size: 0.875rem;">Welcome, @context.User.Identity?.Name</span>
+                        <Authorized Context="auth">
+                            @{
+                                string? roleLabel = null;
+                                if (auth.User.IsInRole("Admin")) roleLabel = "Admin";
+                                else if (auth.User.IsInRole("Doctor")) roleLabel = "Doctor";
+                                else if (auth.User.IsInRole("Nurse")) roleLabel = "Nurse";
+                                else if (auth.User.IsInRole("Health Records")) roleLabel = "Health Records";
+                                else if (auth.User.IsInRole("Patient")) roleLabel = "Patient";
+                                string roleClass = roleLabel switch
+                                {
+                                    "Admin" => "badge bg-danger",
+                                    "Doctor" => "badge bg-primary",
+                                    "Nurse" => "badge bg-success",
+                                    "Health Records" => "badge bg-info",
+                                    "Patient" => "badge bg-secondary",
+                                    _ => "badge bg-secondary"
+                                };
+                            }
+                            <span class="text-white d-none d-sm-inline" style="font-size: 0.875rem;">Welcome, @auth.User.Identity?.Name</span>
+                            @if (!string.IsNullOrEmpty(roleLabel))
+                            {
+                                <span class="@roleClass" style="font-size: 0.75rem;">@roleLabel</span>
+                            }
                             <a href="/api/account/logout" class="btn btn-sm btn-outline-light">Logout</a>
                         </Authorized>
                         <NotAuthorized>

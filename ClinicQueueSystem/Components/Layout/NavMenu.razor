@@ -1,4 +1,4 @@
-﻿@using ClinicQueueSystem.Services
+@using ClinicQueueSystem.Services
 @using ClinicQueueSystem.Data.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthorizationService AuthService
@@ -27,22 +27,6 @@
                 <NavLink class="nav-link" href="appointments" @onclick="HandleNavClick">
                     <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span>
                     <span class="nav-text">Appointments</span>
-                </NavLink>
-            </div>
-        }
-
-        @if (canBookAppointments)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="appointments/book" @onclick="HandleNavClick">
-                    <span class="bi bi-calendar-plus-nav-menu" aria-hidden="true"></span>
-                    <span class="nav-text">Book Appointment</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="appointments/availability" @onclick="HandleNavClick">
-                    <span class="bi bi-calendar2-check-nav-menu" aria-hidden="true"></span>
-                    <span class="nav-text">Availability</span>
                 </NavLink>
             </div>
         }
@@ -90,7 +74,6 @@
 
 @code {
     private bool canViewAppointments = false;
-    private bool canBookAppointments = false;
     private bool canViewQueue = false;
     private bool canCheckIn = false;
     private bool canViewAdmin = false;
@@ -102,7 +85,6 @@
     protected override async Task OnInitializedAsync()
     {
         canViewAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_View);
-        canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
         canViewQueue = await AuthService.HasPermissionAsync(Permissions.Queue_View);
         canCheckIn = await AuthService.HasPermissionAsync(Permissions.Queue_CheckIn);
         canViewAdmin = await AuthService.HasPermissionAsync(Permissions.Users_View);
@@ -113,4 +95,3 @@
         return OnNavigate.InvokeAsync();
     }
 }
-
