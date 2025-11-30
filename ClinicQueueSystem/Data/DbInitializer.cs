@@ -46,8 +46,6 @@ public static class DbInitializer
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
         }
-<<<<<<< HEAD
-
         // Create default doctor users and providers with schedules
         await SeedDoctorsAndSchedules(userManager, dbContext);
 
@@ -277,7 +275,5 @@ public static class DbInitializer
                 await dbContext.SaveChangesAsync();
             }
         }
-=======
->>>>>>> parent of 413e72e (feat: provider/schedule UI + availability/booking fixes)
     }
 }
