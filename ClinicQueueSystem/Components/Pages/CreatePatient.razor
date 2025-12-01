@@ -3,10 +3,13 @@
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @attribute [Authorize]
 @rendermode InteractiveServer
 
@@ -38,70 +41,118 @@
     }
     else
     {
-        <EditForm Model="newPatient" OnValidSubmit="HandleValidSubmit">
+        <EditForm Model="form" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="form-group mb-3">
-                <label class="form-label">Select User Account</label>
-                <select class="form-select" @bind="selectedUserId">
-                    <option value="">-- Select a user --</option>
-                    @foreach (var user in availableUsers)
-                    {
-                        <option value="@user.Id">@user.FirstName @user.LastName (@user.Email)</option>
-                    }
-                </select>
-                <small class="form-text text-muted">Select an existing user account to associate with this patient record.</small>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">User Account</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">First Name</label>
+                                <InputText class="form-control" @bind-Value="form.FirstName" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Last Name</label>
+                                <InputText class="form-control" @bind-Value="form.LastName" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Email</label>
+                                <InputText type="email" class="form-control" @bind-Value="form.Email" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Password</label>
+                                <InputText type="password" class="form-control" @bind-Value="form.Password" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Confirm Password</label>
+                                <InputText type="password" class="form-control" @bind-Value="form.ConfirmPassword" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label class="form-label">Name</label>
-                <input class="form-control" value="@GetSelectedUserName()" readonly />
-                <small class="form-text text-muted">Auto-filled from the selected user account.</small>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">Patient Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Medical Record Number</label>
+                                <InputText class="form-control" @bind-Value="form.MedicalRecordNumber" placeholder="MRN-12345" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <InputText class="form-control" @bind-Value="form.PhoneNumber" placeholder="(555) 123-4567" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                <InputDate class="form-control" @bind-Value="form.DateOfBirth" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Gender</label>
+                                <select class="form-select" @bind="form.Gender">
+                                    <option value="">-- Select --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Address</label>
+                                <InputText class="form-control" @bind-Value="form.Address" placeholder="123 Main St, City, State ZIP" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Emergency Contact Name</label>
+                                <InputText class="form-control" @bind-Value="form.EmergencyContact" placeholder="John Doe" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Emergency Phone</label>
+                                <InputText class="form-control" @bind-Value="form.EmergencyPhone" placeholder="(555) 987-6543" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label class="form-label">Medical Record Number</label>
-                <InputText class="form-control" @bind-Value="newPatient.MedicalRecordNumber" placeholder="MRN-12345" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Phone Number</label>
-                <InputText class="form-control" @bind-Value="newPatient.PhoneNumber" placeholder="(555) 123-4567" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Date of Birth</label>
-                <InputDate class="form-control" @bind-Value="newPatient.DateOfBirth" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Gender</label>
-                <select class="form-select" @bind="newPatient.Gender">
-                    <option value="">-- Select --</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                </select>
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Address</label>
-                <InputText class="form-control" @bind-Value="newPatient.Address" placeholder="123 Main St, City, State ZIP" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Emergency Contact Name</label>
-                <InputText class="form-control" @bind-Value="newPatient.EmergencyContact" placeholder="John Doe" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Emergency Phone</label>
-                <InputText class="form-control" @bind-Value="newPatient.EmergencyPhone" placeholder="(555) 987-6543" />
-            </div>
-
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 mt-3">
                 <button type="submit" class="btn btn-primary" disabled="@isProcessing">
                     @if (isProcessing)
                     {
@@ -116,37 +167,15 @@
 </div>
 
 @code {
-    private Patient newPatient = new();
-    private List<ApplicationUser> availableUsers = new();
-    private string selectedUserId = "";
+    private CreatePatientFormModel form = new();
     private bool loading = true;
     private bool canManagePatients = false;
     private bool isProcessing = false;
     private string errorMessage = "";
 
-    private string GetSelectedUserName()
-    {
-        var user = availableUsers.FirstOrDefault(u => u.Id == selectedUserId);
-        return user is null ? "" : $"{user.FirstName} {user.LastName}";
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        // Check permissions
         canManagePatients = await AuthService.HasPermissionAsync(Permissions.Patients_Create);
-
-        if (canManagePatients)
-        {
-            // Load users who are not already patients and have the Patient role
-            var existingPatientUserIds = await Db.Patients.Select(p => p.UserId).ToListAsync();
-
-            availableUsers = await Db.Users
-                .Where(u => !existingPatientUserIds.Contains(u.Id))
-                .OrderBy(u => u.FirstName)
-                .ThenBy(u => u.LastName)
-                .ToListAsync();
-        }
-
         loading = false;
     }
 
@@ -154,17 +183,29 @@
     {
         errorMessage = "";
 
-        if (string.IsNullOrEmpty(selectedUserId))
+        if (!canManagePatients)
         {
-            errorMessage = "Please select a user account.";
+            errorMessage = "You do not have permission to create patients.";
             return;
         }
 
-        // Check if MRN is unique
-        var existingMrn = await Db.Patients.AnyAsync(p => p.MedicalRecordNumber == newPatient.MedicalRecordNumber);
-        if (existingMrn)
+        if (form.Password != form.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        var mrnExists = await Db.Patients.AnyAsync(p => p.MedicalRecordNumber == form.MedicalRecordNumber);
+        if (mrnExists)
         {
             errorMessage = "Medical Record Number already exists. Please use a unique MRN.";
+            return;
+        }
+
+        var existingUser = await UserManager.FindByEmailAsync(form.Email);
+        if (existingUser is not null)
+        {
+            errorMessage = "An account with this email already exists.";
             return;
         }
 
@@ -172,9 +213,45 @@
 
         try
         {
-            newPatient.UserId = selectedUserId;
-            Db.Patients.Add(newPatient);
+            var user = new ApplicationUser
+            {
+                UserName = form.Email,
+                Email = form.Email,
+                FirstName = form.FirstName,
+                LastName = form.LastName,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var createResult = await UserManager.CreateAsync(user, form.Password);
+            if (!createResult.Succeeded)
+            {
+                errorMessage = string.Join("; ", createResult.Errors.Select(e => e.Description));
+                isProcessing = false;
+                return;
+            }
+
+            if (!await RoleManager.RoleExistsAsync("Patient"))
+            {
+                await RoleManager.CreateAsync(new IdentityRole("Patient"));
+            }
+            await UserManager.AddToRoleAsync(user, "Patient");
+
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                MedicalRecordNumber = form.MedicalRecordNumber,
+                DateOfBirth = form.DateOfBirth,
+                Gender = form.Gender,
+                Address = form.Address,
+                PhoneNumber = form.PhoneNumber,
+                EmergencyContact = form.EmergencyContact,
+                EmergencyPhone = form.EmergencyPhone,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            Db.Patients.Add(patient);
             await Db.SaveChangesAsync();
+
             Navigation.NavigateTo("/patients");
         }
         catch (Exception ex)
@@ -182,5 +259,37 @@
             errorMessage = $"Error creating patient: {ex.Message}";
             isProcessing = false;
         }
+    }
+
+    public class CreatePatientFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public string FirstName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string LastName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.MinLength(6)]
+        public string Password { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Compare(nameof(Password))]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string MedicalRecordNumber { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public DateTime DateOfBirth { get; set; } = DateTime.UtcNow.Date;
+
+        public string Gender { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string EmergencyContact { get; set; } = string.Empty;
+        public string EmergencyPhone { get; set; } = string.Empty;
     }
 }
