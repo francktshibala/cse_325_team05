@@ -1,0 +1,175 @@
+@page "/appointments/edit"
+@page "/appointments/edit/{Id:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+
+@inject ApplicationDbContext Db
+@inject NavigationManager Nav
+
+<PageTitle>Edit Appointment - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0; max-width: 900px;">
+    <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+        <div style="background-color: #f8f9fa; border-bottom: 2px solid #2C5F8D; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+            <h3 style="font-size: 1.5rem; font-weight: 600; color: #212529; margin: 0;">Edit Appointment</h3>
+        </div>
+        <div style="padding: 24px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mb-3">@errorMessage</div>
+            }
+            @if (saved)
+            {
+                <div class="alert alert-success mb-3">Appointment updated successfully.</div>
+                <a class="btn btn-primary" href="/appointments">Back to Appointments</a>
+            }
+            else if (appointment is null)
+            {
+                <div class="alert alert-warning">Appointment not found.</div>
+                <a class="btn btn-secondary" href="/appointments">Back</a>
+            }
+            else
+            {
+                <div class="mb-3 text-muted">
+                    <div><strong>When:</strong> @appointment.ScheduledDateTime.ToString("MMMM dd, yyyy 'at' h:mm tt") (@appointment.DurationMinutes min)</div>
+                    <div><strong>Provider:</strong> @appointment.Provider.User.FirstName @appointment.Provider.User.LastName (@appointment.Provider.Specialty)</div>
+                    <div><strong>Patient:</strong> @appointment.Patient.User.FirstName @appointment.Patient.User.LastName</div>
+                </div>
+
+                <div class="d-flex gap-2 mb-4">
+                    <a class="btn btn-outline-secondary" href="/appointments/reschedule/@appointment.Id">Reschedule</a>
+                    @if (appointment.Status != "Cancelled" && appointment.Status != "Completed")
+                    {
+                        <button class="btn btn-outline-danger" @onclick="CancelFromEdit">Cancel Appointment</button>
+                    }
+                </div>
+
+                <EditForm Model="model" OnValidSubmit="SaveAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Appointment Type</label>
+                            <select class="form-control" @bind="model.AppointmentType">
+                                <option value="">-- Select Type --</option>
+                                <option>Checkup</option>
+                                <option>Consultation</option>
+                                <option>Follow-up</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" @bind="model.Status">
+                                <option>Scheduled</option>
+                                <option>Confirmed</option>
+                                <option>Cancelled</option>
+                                <option>Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">Reason</label>
+                            <InputText class="form-control" @bind-Value="model.Reason" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            <InputText class="form-control" @bind-Value="model.Notes" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a class="btn btn-secondary" href="/appointments">Back</a>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Appointment? appointment;
+    private string? errorMessage;
+    private bool saved = false;
+
+    private class EditAppointmentModel
+    {
+        public string AppointmentType { get; set; } = string.Empty;
+        public string Status { get; set; } = "Scheduled";
+        public string? Reason { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    private EditAppointmentModel model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id == 0)
+        {
+            Nav.NavigateTo("/appointments", true);
+            return;
+        }
+
+        appointment = await Db.Appointments
+            .Include(a => a.Provider).ThenInclude(p => p.User)
+            .Include(a => a.Patient).ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(a => a.Id == Id);
+
+        if (appointment != null)
+        {
+            model.AppointmentType = appointment.AppointmentType;
+            model.Status = appointment.Status;
+            model.Reason = appointment.Reason;
+            model.Notes = appointment.Notes;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (appointment == null)
+        {
+            errorMessage = "Appointment could not be loaded.";
+            return;
+        }
+
+        var previousStatus = appointment.Status;
+        appointment.AppointmentType = string.IsNullOrWhiteSpace(model.AppointmentType) ? "Consultation" : model.AppointmentType;
+        appointment.Status = string.IsNullOrWhiteSpace(model.Status) ? previousStatus : model.Status;
+        appointment.Reason = model.Reason;
+        appointment.Notes = model.Notes;
+
+        // Maintain CancelledAt based on status transitions
+        if (previousStatus != "Cancelled" && appointment.Status == "Cancelled")
+        {
+            appointment.CancelledAt = DateTime.UtcNow;
+        }
+        else if (previousStatus == "Cancelled" && appointment.Status != "Cancelled")
+        {
+            appointment.CancelledAt = null;
+        }
+
+        await Db.SaveChangesAsync();
+        saved = true;
+    }
+
+    private async Task CancelFromEdit()
+    {
+        if (appointment == null) return;
+        if (appointment.Status == "Cancelled") return;
+        appointment.Status = "Cancelled";
+        appointment.CancelledAt = DateTime.UtcNow;
+        await Db.SaveChangesAsync();
+        model.Status = appointment.Status;
+        saved = true;
+    }
+}
+
+

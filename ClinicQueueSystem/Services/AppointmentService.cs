@@ -24,15 +24,32 @@ public class AppointmentService : IAppointmentService
         if (slotMinutes <= 0) slotMinutes = 30;
         date = date.Date;
 
-        // Provider base schedules for the day of week and effective date range
+        // Determine schedules for the day:
+        // If any dated exceptions exist for the date, they override defaults; otherwise use defaults only.
         var dayOfWeek = date.DayOfWeek;
-        var schedules = await _db.Schedules
+        var exceptionSchedules = await _db.Schedules
             .Where(s => s.ProviderId == providerId
                         && s.DayOfWeek == dayOfWeek
-                        && s.IsAvailable
-                        && (!s.EffectiveDate.HasValue || s.EffectiveDate.Value.Date <= date)
+                        && s.EffectiveDate.HasValue
+                        && s.EffectiveDate.Value.Date <= date
                         && (!s.ExpirationDate.HasValue || s.ExpirationDate.Value.Date >= date))
             .ToListAsync(ct);
+
+        List<Schedule> schedules;
+        if (exceptionSchedules.Any())
+        {
+            schedules = exceptionSchedules.Where(s => s.IsAvailable).ToList();
+        }
+        else
+        {
+            schedules = await _db.Schedules
+                .Where(s => s.ProviderId == providerId
+                            && s.DayOfWeek == dayOfWeek
+                            && s.IsAvailable
+                            && !s.EffectiveDate.HasValue
+                            && !s.ExpirationDate.HasValue)
+                .ToListAsync(ct);
+        }
 
         if (schedules.Count == 0)
         {
@@ -90,15 +107,31 @@ public class AppointmentService : IAppointmentService
         var date = start.Date;
         var end = start.AddMinutes(durationMinutes <= 0 ? 30 : durationMinutes);
 
-        // Check provider has availability schedule covering this time
+        // Check provider has availability schedule covering this time.
+        // Apply exception precedence: if any exceptions exist for the date, only those apply; otherwise defaults.
         var dayOfWeek = date.DayOfWeek;
-        var schedules = await _db.Schedules
+        var exceptionSchedules = await _db.Schedules
             .Where(s => s.ProviderId == providerId
                         && s.DayOfWeek == dayOfWeek
-                        && s.IsAvailable
-                        && (!s.EffectiveDate.HasValue || s.EffectiveDate.Value.Date <= date)
+                        && s.EffectiveDate.HasValue
+                        && s.EffectiveDate.Value.Date <= date
                         && (!s.ExpirationDate.HasValue || s.ExpirationDate.Value.Date >= date))
             .ToListAsync(ct);
+        List<Schedule> schedules;
+        if (exceptionSchedules.Any())
+        {
+            schedules = exceptionSchedules.Where(s => s.IsAvailable).ToList();
+        }
+        else
+        {
+            schedules = await _db.Schedules
+                .Where(s => s.ProviderId == providerId
+                            && s.DayOfWeek == dayOfWeek
+                            && s.IsAvailable
+                            && !s.EffectiveDate.HasValue
+                            && !s.ExpirationDate.HasValue)
+                .ToListAsync(ct);
+        }
 
         var withinSchedule = schedules.Any(s =>
         {

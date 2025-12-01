@@ -1,4 +1,5 @@
 @page "/appointments"
+@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -343,8 +344,7 @@
 
     private void EditAppointment(int appointmentId)
     {
-        // TODO: Navigate to edit page
-        // NavigationManager.NavigateTo($"/appointments/edit/{appointmentId}");
+        NavigationManager.NavigateTo($"/appointments/edit/{appointmentId}");
     }
 
     private void RescheduleAppointment(int appointmentId)

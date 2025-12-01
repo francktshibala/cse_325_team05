@@ -1,6 +1,5 @@
 using ClinicQueueSystem.Data.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClinicQueueSystem.Data;
 
@@ -47,7 +46,6 @@ public static class DbInitializer
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
         }
-
         // Create default doctor users and providers with schedules
         await SeedDoctorsAndSchedules(userManager, dbContext);
 
@@ -78,7 +76,6 @@ public static class DbInitializer
             {
                 await userManager.AddToRoleAsync(doctor1User, "Doctor");
 
-                // Create provider record
                 var provider1 = new Provider
                 {
                     UserId = doctor1User.Id,
@@ -89,15 +86,14 @@ public static class DbInitializer
                 dbContext.Providers.Add(provider1);
                 await dbContext.SaveChangesAsync();
 
-                // Create schedule: Monday-Friday 9 AM - 5 PM
                 for (int day = 1; day <= 5; day++) // Monday to Friday
                 {
                     dbContext.Schedules.Add(new Schedule
                     {
                         ProviderId = provider1.Id,
                         DayOfWeek = (DayOfWeek)day,
-                        StartTime = new TimeSpan(9, 0, 0),  // 9:00 AM
-                        EndTime = new TimeSpan(17, 0, 0),   // 5:00 PM
+                        StartTime = new TimeSpan(9, 0, 0),
+                        EndTime = new TimeSpan(17, 0, 0),
                         IsAvailable = true,
                         EffectiveDate = DateTime.Today.AddDays(-30),
                         ExpirationDate = DateTime.Today.AddYears(1)
@@ -128,7 +124,6 @@ public static class DbInitializer
             {
                 await userManager.AddToRoleAsync(doctor2User, "Doctor");
 
-                // Create provider record
                 var provider2 = new Provider
                 {
                     UserId = doctor2User.Id,
@@ -139,15 +134,14 @@ public static class DbInitializer
                 dbContext.Providers.Add(provider2);
                 await dbContext.SaveChangesAsync();
 
-                // Create schedule: Monday-Thursday 8 AM - 4 PM
                 for (int day = 1; day <= 4; day++) // Monday to Thursday
                 {
                     dbContext.Schedules.Add(new Schedule
                     {
                         ProviderId = provider2.Id,
                         DayOfWeek = (DayOfWeek)day,
-                        StartTime = new TimeSpan(8, 0, 0),  // 8:00 AM
-                        EndTime = new TimeSpan(16, 0, 0),   // 4:00 PM
+                        StartTime = new TimeSpan(8, 0, 0),
+                        EndTime = new TimeSpan(16, 0, 0),
                         IsAvailable = true,
                         EffectiveDate = DateTime.Today.AddDays(-30),
                         ExpirationDate = DateTime.Today.AddYears(1)
@@ -178,7 +172,6 @@ public static class DbInitializer
             {
                 await userManager.AddToRoleAsync(doctor3User, "Doctor");
 
-                // Create provider record
                 var provider3 = new Provider
                 {
                     UserId = doctor3User.Id,
@@ -189,15 +182,14 @@ public static class DbInitializer
                 dbContext.Providers.Add(provider3);
                 await dbContext.SaveChangesAsync();
 
-                // Create schedule: Tuesday-Saturday 10 AM - 6 PM
                 for (int day = 2; day <= 6; day++) // Tuesday to Saturday
                 {
                     dbContext.Schedules.Add(new Schedule
                     {
                         ProviderId = provider3.Id,
                         DayOfWeek = (DayOfWeek)day,
-                        StartTime = new TimeSpan(10, 0, 0),  // 10:00 AM
-                        EndTime = new TimeSpan(18, 0, 0),    // 6:00 PM
+                        StartTime = new TimeSpan(10, 0, 0),
+                        EndTime = new TimeSpan(18, 0, 0),
                         IsAvailable = true,
                         EffectiveDate = DateTime.Today.AddDays(-30),
                         ExpirationDate = DateTime.Today.AddYears(1)
@@ -231,7 +223,6 @@ public static class DbInitializer
             {
                 await userManager.AddToRoleAsync(patient1User, "Patient");
 
-                // Create patient record
                 var patient1 = new Patient
                 {
                     UserId = patient1User.Id,
@@ -269,7 +260,6 @@ public static class DbInitializer
             {
                 await userManager.AddToRoleAsync(patient2User, "Patient");
 
-                // Create patient record
                 var patient2 = new Patient
                 {
                     UserId = patient2User.Id,
