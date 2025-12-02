@@ -94,22 +94,20 @@
     {
         <div class="row">
             <div class="col-md-12">
-                <div class="card" style="background: white; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); padding: 3rem;">
-                    <div class="text-center">
-                        <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
-                        <h3 style="color: #495057; margin-bottom: 1rem;">No Appointments Found</h3>
-                        <p style="color: #6c757d; font-size: 1.125rem; margin-bottom: 2rem;">
-                            @if (isPatient)
-                            {
-                                <text>You don't have any appointments scheduled yet. Book your first appointment to get started!</text>
-                            }
-                            else
-                            {
-                                <text>There are no appointments in the system at this time.</text>
-                            }
-                        </p>
-                        <a href="/appointments/availability" class="btn btn-outline-primary btn-lg">Find Availability</a>
-                    </div>
+                <div class="card p-5 text-center" style="border: 1px solid #e9ecef; border-radius: 8px;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+                    <h3 style="color: #495057; margin-bottom: 1rem;">No Appointments Found</h3>
+                    <p style="color: #6c757d; font-size: 1.125rem; margin-bottom: 2rem;">
+                        @if (isPatient)
+                        {
+                            <text>You don't have any appointments scheduled yet. Book your first appointment to get started!</text>
+                        }
+                        else
+                        {
+                            <text>There are no appointments in the system at this time.</text>
+                        }
+                    </p>
+                    <a href="/appointments/availability" class="btn btn-outline-primary btn-lg">Find Availability</a>
                 </div>
             </div>
         </div>
@@ -132,7 +130,7 @@
             @foreach (var appointment in filtered)
             {
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100" style="border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div class="card h-100" style="border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <h5 class="card-title mb-0" style="color: #2C5F8D;">
@@ -194,7 +192,7 @@
                                 </div>
                             }
                         </div>
-                        
+
                         @if (canManageAppointments || (isPatient && appointment.Status == "Scheduled"))
                         {
                             <div class="card-footer bg-transparent border-top">
@@ -217,6 +215,14 @@
                                             Cancel
                                         </button>
                                     }
+
+                                    <!-- Check-In Button for Today’s Appointments -->
+                                    @if (isPatient && appointment.Status == "Scheduled" && appointment.ScheduledDateTime.Date == DateTime.Today)
+                                    {
+                                        <button class="btn btn-sm btn-success" @onclick="() => CheckInAppointment(appointment.Id)">
+                                            Check In
+                                        </button>
+                                    }
                                 </div>
                             </div>
                         }
@@ -236,7 +242,6 @@
     private bool canManageAppointments = false;
     private bool canCancelAppointments = false;
 
-    // Filters/sorting
     private string? filterStatus = "";
     private DateTime filterFrom = DateTime.Today;
     private DateTime? filterTo = null;
@@ -257,13 +262,11 @@
             return;
         }
 
-        // Pre-compute permission checks
         isPatient = await AuthService.IsPatientAsync();
         canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
         canManageAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Manage);
         canCancelAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Cancel);
 
-        // provider options for staff
         if (!isPatient)
         {
             providerFilterOptions = await DbContext.Providers
@@ -280,77 +283,39 @@
     private async Task LoadAppointments()
     {
         var query = DbContext.Appointments
-            .Include(a => a.Patient)
-                .ThenInclude(p => p.User)
-            .Include(a => a.Provider)
-                .ThenInclude(p => p.User)
+            .Include(a => a.Patient).ThenInclude(p => p.User)
+            .Include(a => a.Provider).ThenInclude(p => p.User)
             .AsQueryable();
 
-        // Filter based on role
         if (isPatient)
         {
-            // Patients see only their own appointments
-            var patient = await DbContext.Patients
-                .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
-            
-            if (patient != null)
-            {
-                query = query.Where(a => a.PatientId == patient.Id);
-            }
-            else
-            {
-                appointments = new List<Appointment>();
-                return;
-            }
+            var patient = await DbContext.Patients.FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
+            if (patient != null) query = query.Where(a => a.PatientId == patient.Id);
+            else { appointments = new List<Appointment>(); return; }
         }
         else if (await AuthService.IsDoctorAsync())
         {
-            // Doctors see appointments for their patients
-            var provider = await DbContext.Providers
-                .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
-            
-            if (provider != null)
-            {
-                query = query.Where(a => a.ProviderId == provider.Id);
-            }
-            else
-            {
-                appointments = new List<Appointment>();
-                return;
-            }
+            var provider = await DbContext.Providers.FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
+            if (provider != null) query = query.Where(a => a.ProviderId == provider.Id);
+            else { appointments = new List<Appointment>(); return; }
         }
-        // Admins, Nurses, and Health Records see all appointments
 
-        // Only future appointments by default
-        var today = DateTime.Today;
-        query = query.Where(a => a.ScheduledDateTime >= today);
-
+        query = query.Where(a => a.ScheduledDateTime >= DateTime.Today);
         appointments = await query.ToListAsync();
         ApplyFilters();
     }
 
-    private string GetStatusBadgeClass(string status)
+    private string GetStatusBadgeClass(string status) => status switch
     {
-        return status switch
-        {
-            "Scheduled" => "bg-primary",
-            "Confirmed" => "bg-success",
-            "Cancelled" => "bg-danger",
-            "Completed" => "bg-secondary",
-            _ => "bg-secondary"
-        };
-    }
+        "Scheduled" => "bg-primary",
+        "Confirmed" => "bg-success",
+        "Cancelled" => "bg-danger",
+        "Completed" => "bg-secondary",
+        _ => "bg-secondary"
+    };
 
-    private void EditAppointment(int appointmentId)
-    {
-        // TODO: Navigate to edit page
-        // NavigationManager.NavigateTo($"/appointments/edit/{appointmentId}");
-    }
-
-    private void RescheduleAppointment(int appointmentId)
-    {
-        NavigationManager.NavigateTo($"/appointments/reschedule/{appointmentId}");
-    }
+    private void EditAppointment(int appointmentId) => NavigationManager.NavigateTo($"/appointments/edit/{appointmentId}");
+    private void RescheduleAppointment(int appointmentId) => NavigationManager.NavigateTo($"/appointments/reschedule/{appointmentId}");
 
     private async Task CancelAppointment(int appointmentId)
     {
@@ -365,32 +330,21 @@
         }
     }
 
+    private void CheckInAppointment(int appointmentId)
+    {
+        NavigationManager.NavigateTo($"/checkin?appointmentId={appointmentId}");
+    }
+
     private void ApplyFilters()
     {
-        if (appointments == null)
-        {
-            filtered = new List<Appointment>();
-            return;
-        }
+        if (appointments == null) { filtered = new List<Appointment>(); return; }
 
         IEnumerable<Appointment> q = appointments;
 
-        if (!string.IsNullOrEmpty(filterStatus))
-        {
-            q = q.Where(a => a.Status.Equals(filterStatus, StringComparison.OrdinalIgnoreCase));
-        }
-        if (filterFrom != default)
-        {
-            q = q.Where(a => a.ScheduledDateTime.Date >= filterFrom.Date);
-        }
-        if (filterTo.HasValue)
-        {
-            q = q.Where(a => a.ScheduledDateTime.Date <= filterTo.Value.Date);
-        }
-        if (filterProviderId.HasValue && filterProviderId.Value > 0)
-        {
-            q = q.Where(a => a.ProviderId == filterProviderId.Value);
-        }
+        if (!string.IsNullOrEmpty(filterStatus)) q = q.Where(a => a.Status.Equals(filterStatus, StringComparison.OrdinalIgnoreCase));
+        if (filterFrom != default) q = q.Where(a => a.ScheduledDateTime.Date >= filterFrom.Date);
+        if (filterTo.HasValue) q = q.Where(a => a.ScheduledDateTime.Date <= filterTo.Value.Date);
+        if (filterProviderId.HasValue && filterProviderId.Value > 0) q = q.Where(a => a.ProviderId == filterProviderId.Value);
 
         q = sortOrder switch
         {
@@ -402,6 +356,4 @@
 
         filtered = q.ToList();
     }
-
 }
-
