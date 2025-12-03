@@ -5,7 +5,6 @@ A modern .NET Blazor web application for managing patient flow, appointments, an
 ## Team Members
 
 - Francois Matenda Tshibala (Team Lead) - GitHub: francktshibala
-- Adetokunbo Olutola Osibo
 - Daniel Adetaba Adongo - GitHub: Adetabanat
 - Bimbola Peace Osho-Lowu - GitHub: bimbolin
 - Ernest Ojakol - ernest-ojakol
