@@ -79,7 +79,7 @@ public static class Permissions
         {
             Appointments_View, Appointments_Manage,
             Patients_View, Patients_ViewOwn, Patients_Edit,
-            Queue_View,
+            Queue_View, Queue_Manage,
             VisitNotes_View, VisitNotes_Create, VisitNotes_Edit,
             Schedules_View, Schedules_Manage, Schedules_ViewOwn,
             Reports_View
