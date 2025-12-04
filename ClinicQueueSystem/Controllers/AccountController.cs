@@ -1,6 +1,8 @@
 using ClinicQueueSystem.Data.Models;
+using ClinicQueueSystem.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClinicQueueSystem.Controllers;
 
@@ -11,15 +13,18 @@ public class AccountController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ApplicationDbContext _dbContext;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        ApplicationDbContext dbContext)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _roleManager = roleManager;
+        _dbContext = dbContext;
     }
 
     [HttpPost("login")]
@@ -87,6 +92,45 @@ public class AccountController : ControllerBase
 
             // Add user to role
             await _userManager.AddToRoleAsync(user, role);
+
+            // Create Patient record if role is Patient
+            if (role == "Patient")
+            {
+                // Check if patient record already exists
+                var existingPatient = await _dbContext.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+                if (existingPatient == null)
+                {
+                    // Generate a unique Medical Record Number
+                    var lastMrn = await _dbContext.Patients
+                        .OrderByDescending(p => p.MedicalRecordNumber)
+                        .Select(p => p.MedicalRecordNumber)
+                        .FirstOrDefaultAsync();
+
+                    int nextMrnNumber = 1;
+                    if (!string.IsNullOrEmpty(lastMrn) && lastMrn.StartsWith("MRN-"))
+                    {
+                        if (int.TryParse(lastMrn.Substring(4), out var lastNumber))
+                        {
+                            nextMrnNumber = lastNumber + 1;
+                        }
+                    }
+
+                    var patient = new Patient
+                    {
+                        UserId = user.Id,
+                        MedicalRecordNumber = $"MRN-{nextMrnNumber:D3}",
+                        DateOfBirth = DateTime.Today.AddYears(-30), // Default, can be updated later
+                        Gender = "", // Can be updated later
+                        PhoneNumber = "",
+                        Address = "",
+                        EmergencyContact = "",
+                        EmergencyPhone = ""
+                    };
+
+                    _dbContext.Patients.Add(patient);
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
 
             // Sign in the user
             await _signInManager.SignInAsync(user, isPersistent: false);
