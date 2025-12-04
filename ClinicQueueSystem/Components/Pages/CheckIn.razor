@@ -2,15 +2,18 @@
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
+@using ClinicQueueSystem.Hubs
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR
 @inject ApplicationDbContext DbContext
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject IHubContext<QueueHub> QueueHubContext
 @attribute [Authorize]
 
 <PageTitle>Check In - Clinic Queue System</PageTitle>
@@ -131,8 +134,8 @@
                         <textarea class="form-control" rows="3" @bind="reason" placeholder="Briefly describe the reason for your visit (optional)"></textarea>
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary btn-lg" @onclick="PerformCheckIn" disabled="@isProcessing">
+                    <div class="d-grid gap-2 d-sm-flex">
+                        <button type="button" class="btn btn-primary btn-lg" @onclick="PerformCheckIn" disabled="@isProcessing">
                             @if (isProcessing)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -204,12 +207,15 @@
         }
 
         // Load upcoming appointments
+        var today = DateTime.Today;
+        var tomorrow = today.AddDays(1);
         upcomingAppointments = await DbContext.Appointments
             .Include(a => a.Provider)
                 .ThenInclude(p => p.User)
             .Where(a => a.PatientId == currentPatient.Id && 
                        a.Status == "Scheduled" && 
-                       a.ScheduledDateTime >= DateTime.Now)
+                       a.ScheduledDateTime >= today &&
+                       a.ScheduledDateTime < tomorrow)
             .OrderBy(a => a.ScheduledDateTime)
             .ToListAsync();
 
@@ -230,6 +236,33 @@
 
         try
         {
+            // Validate appointment selection when required and that it's for today
+            if (checkInType == "appointment")
+            {
+                if (selectedAppointmentId <= 0)
+                {
+                    errorMessage = "Please select your appointment to check in.";
+                    isProcessing = false;
+                    return;
+                }
+
+                var appt = await DbContext.Appointments.FindAsync(selectedAppointmentId);
+                if (appt == null)
+                {
+                    errorMessage = "Appointment not found.";
+                    isProcessing = false;
+                    return;
+                }
+                var today = DateTime.Today;
+                var tomorrow = today.AddDays(1);
+                if (!(appt.ScheduledDateTime >= today && appt.ScheduledDateTime < tomorrow))
+                {
+                    errorMessage = "You can only check in on the day of your appointment.";
+                    isProcessing = false;
+                    return;
+                }
+            }
+
             // Check if already in queue
             var existingTicket = await DbContext.QueueTickets
                 .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id && 
@@ -240,6 +273,19 @@
                 errorMessage = "You are already checked in to the queue.";
                 isProcessing = false;
                 return;
+            }
+
+            // Prevent double check-in for the same appointment
+            if (checkInType == "appointment" && selectedAppointmentId > 0)
+            {
+                var existingApptTicket = await DbContext.QueueTickets
+                    .FirstOrDefaultAsync(q => q.AppointmentId == selectedAppointmentId && q.Status != "Completed");
+                if (existingApptTicket != null)
+                {
+                    errorMessage = "This appointment is already checked in.";
+                    isProcessing = false;
+                    return;
+                }
             }
 
             // Get the next queue position
@@ -265,13 +311,22 @@
             };
 
             DbContext.QueueTickets.Add(queueTicket);
+            // If attached to an appointment, mark the appointment as CheckedIn
+            if (queueTicket.AppointmentId.HasValue)
+            {
+                var apptToUpdate = await DbContext.Appointments.FindAsync(queueTicket.AppointmentId.Value);
+                if (apptToUpdate != null && apptToUpdate.Status == "Scheduled")
+                {
+                    apptToUpdate.Status = "CheckedIn";
+                }
+            }
             await DbContext.SaveChangesAsync();
+            await QueueHubContext.Clients.All.SendAsync("queueUpdated");
 
             successMessage = $"Successfully checked in! Your queue position is #{nextPosition}.";
             hasActiveQueueTicket = true;
             
-            // Navigate to queue page after a short delay
-            await Task.Delay(2000);
+            // Navigate to queue page
             Navigation.NavigateTo("/queue");
         }
         catch (Exception ex)

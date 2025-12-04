@@ -1,4 +1,6 @@
+using ClinicQueueSystem.Data;
 using ClinicQueueSystem.Data.Models;
+using ClinicQueueSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,15 +13,21 @@ public class AccountController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ApplicationDbContext _db;
+    private readonly IMrnService _mrnService;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager)
+        RoleManager<IdentityRole> roleManager,
+        ApplicationDbContext db,
+        IMrnService mrnService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _roleManager = roleManager;
+        _db = db;
+        _mrnService = mrnService;
     }
 
     [HttpPost("login")]
@@ -87,6 +95,20 @@ public class AccountController : ControllerBase
 
             // Add user to role
             await _userManager.AddToRoleAsync(user, role);
+
+            // If registering as Patient, create a Patient entity automatically
+            if (role == "Patient")
+            {
+                var mrn = await _mrnService.GenerateUniqueMrnAsync();
+                var patient = new Patient
+                {
+                    UserId = user.Id,
+                    MedicalRecordNumber = mrn,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _db.Patients.Add(patient);
+                await _db.SaveChangesAsync();
+            }
 
             // Sign in the user
             await _signInManager.SignInAsync(user, isPersistent: false);

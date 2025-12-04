@@ -1,0 +1,157 @@
+@page "/my/visit-notes"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Web
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor Http
+
+<PageTitle>My Visit Notes - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+	<h2 class="mb-3" style="color: #2C5F8D;">My Visit Notes</h2>
+
+	@if (!string.IsNullOrEmpty(errorMessage))
+	{
+		<div class="alert alert-danger">@errorMessage</div>
+	}
+
+	@if (loading)
+	{
+		<div class="text-center py-5">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+	}
+	else if (!isPatient || patient is null)
+	{
+		<div class="alert alert-warning">This page is only available to patients.</div>
+	}
+	else
+	{
+		<div class="card mb-3">
+			<div class="card-body">
+				<div class="row g-2">
+					<div class="col-md-6">
+						<input class="form-control" placeholder="Search notes…" @bind="search" @bind:event="oninput" />
+					</div>
+					<div class="col-md-3">
+						<select class="form-select" @bind="typeFilter">
+							<option value="">All Types</option>
+							<option>General</option>
+							<option>Diagnosis</option>
+							<option>Treatment</option>
+							<option>Prescription</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		@if (filtered.Count == 0)
+		{
+			<div class="alert alert-info">No notes found.</div>
+		}
+		else
+		{
+			<div class="list-group">
+				@foreach (var item in filtered)
+				{
+					<div class="list-group-item">
+						<div class="d-flex justify-content-between">
+							<div>
+								<span class="badge bg-secondary me-2">@item.Note.NoteType</span>
+								<strong>@item.Visit.StartTime.ToLocalTime().ToString("g")</strong>
+								<span class="text-muted ms-2">by @item.Provider.User.FirstName @item.Provider.User.LastName</span>
+							</div>
+							<button class="btn btn-sm btn-outline-primary" @onclick="() => ToggleExpand(item.Note.Id)">
+								@(expanded.Contains(item.Note.Id) ? "Hide" : "Show")
+							</button>
+						</div>
+						@if (expanded.Contains(item.Note.Id))
+						{
+							<hr />
+							<div style="white-space: pre-wrap;">@item.Note.NoteText</div>
+							<div class="text-muted mt-2" style="font-size: .9rem;">
+								Created @(item.Note.CreatedAt.ToLocalTime().ToString("g")) @(item.Note.UpdatedAt.HasValue ? $"• Updated {item.Note.UpdatedAt.Value.ToLocalTime():g}" : string.Empty)
+							</div>
+						}
+					</div>
+				}
+			</div>
+		}
+	}
+</div>
+
+@code {
+	private bool loading = true;
+	private bool isPatient = false;
+	private string errorMessage = string.Empty;
+
+	private Patient? patient;
+	private List<(Visit Visit, VisitNote Note, Provider Provider)> entries = new();
+	private List<(Visit Visit, VisitNote Note, Provider Provider)> filtered = new();
+	private HashSet<int> expanded = new();
+
+	private string search = string.Empty;
+	private string typeFilter = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		isPatient = await AuthService.IsPatientAsync();
+		if (!isPatient)
+		{
+			loading = false;
+			return;
+		}
+		var user = await UserManager.GetUserAsync(Http.HttpContext!.User);
+		if (user == null)
+		{
+			loading = false;
+			return;
+		}
+		patient = await Db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+		if (patient != null)
+		{
+			var visits = await Db.Visits.Where(v => v.PatientId == patient.Id).ToListAsync();
+			var visitIds = visits.Select(v => v.Id).ToList();
+			var notes = await Db.VisitNotes
+				.Where(n => visitIds.Contains(n.VisitId))
+				.OrderByDescending(n => n.UpdatedAt ?? n.CreatedAt)
+				.ToListAsync();
+			var providerIds = notes.Select(n => n.ProviderId).Distinct().ToList();
+			var provMap = await Db.Providers.Include(p => p.User)
+				.Where(p => providerIds.Contains(p.Id))
+				.ToDictionaryAsync(p => p.Id);
+			var visitMap = visits.ToDictionary(v => v.Id);
+			entries = notes
+				.Select(n => (visitMap[n.VisitId], n, provMap[n.ProviderId]))
+				.OrderByDescending(t => t.n.UpdatedAt ?? t.n.CreatedAt)
+				.ToList();
+			filtered = entries.ToList();
+		}
+		loading = false;
+	}
+
+	private void ApplyFilters()
+	{
+		filtered = entries.Where(t =>
+			(string.IsNullOrWhiteSpace(search) || (t.Note.NoteText?.Contains(search, StringComparison.OrdinalIgnoreCase) == true)) &&
+			(string.IsNullOrWhiteSpace(typeFilter) || string.Equals(t.Note.NoteType, typeFilter, StringComparison.OrdinalIgnoreCase))
+		).ToList();
+	}
+
+	private void ToggleExpand(int noteId)
+	{
+		if (expanded.Contains(noteId)) expanded.Remove(noteId);
+		else expanded.Add(noteId);
+	}
+}
+
+

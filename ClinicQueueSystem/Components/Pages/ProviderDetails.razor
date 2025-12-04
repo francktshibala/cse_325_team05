@@ -1,0 +1,75 @@
+@page "/providers/{Id:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Web
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Provider Details - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+	<h2 class="mb-3" style="color: #2C5F8D;">Provider Details</h2>
+
+	@if (loading)
+	{
+		<div class="text-center py-5">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+	}
+	else if (entity is null)
+	{
+		<div class="alert alert-danger">Provider not found.</div>
+	}
+	else
+	{
+		<div class="card">
+			<div class="card-header">
+				<h3 class="card-title">@entity.User.FirstName @entity.User.LastName</h3>
+			</div>
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-6">
+						<p><strong>Email:</strong> @entity.User.Email</p>
+						<p><strong>Type:</strong> @entity.ProviderType</p>
+						<p><strong>Specialty:</strong> @entity.Specialty</p>
+					</div>
+					<div class="col-md-6">
+						<p><strong>License:</strong> @entity.LicenseNumber</p>
+						<p><strong>Status:</strong> @(entity.IsActive ? "Active" : "Inactive")</p>
+						<p><strong>Created:</strong> @entity.CreatedAt.ToLocalTime().ToString("g")</p>
+					</div>
+				</div>
+			</div>
+			<div class="card-footer d-flex gap-2">
+				@if (canEdit)
+				{
+					<a class="btn btn-primary" href="/providers/edit/@entity.Id">Edit</a>
+				}
+				<a class="btn btn-secondary" href="/providers">Back</a>
+			</div>
+		</div>
+	}
+</div>
+
+@code {
+	[Microsoft.AspNetCore.Components.Parameter] public int Id { get; set; }
+
+	private bool loading = true;
+	private bool canEdit = false;
+	private Provider? entity;
+
+	protected override async Task OnInitializedAsync()
+	{
+		canEdit = await AuthService.HasPermissionAsync(Permissions.Users_Edit);
+		entity = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == Id);
+		loading = false;
+	}
+}
+
+

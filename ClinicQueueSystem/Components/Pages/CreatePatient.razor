@@ -8,6 +8,7 @@
 @inject ApplicationDbContext Db
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthService
+@inject IMrnService MrnService
 @inject UserManager<ApplicationUser> UserManager
 @inject RoleManager<IdentityRole> RoleManager
 @attribute [Authorize]
@@ -97,7 +98,7 @@
                         <div class="col-md-4">
                             <div class="form-group mb-3">
                                 <label class="form-label">Medical Record Number</label>
-                                <InputText class="form-control" @bind-Value="form.MedicalRecordNumber" placeholder="MRN-12345" />
+                                <input class="form-control" value="Will be auto-assigned" readonly />
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -195,13 +196,6 @@
             return;
         }
 
-        var mrnExists = await Db.Patients.AnyAsync(p => p.MedicalRecordNumber == form.MedicalRecordNumber);
-        if (mrnExists)
-        {
-            errorMessage = "Medical Record Number already exists. Please use a unique MRN.";
-            return;
-        }
-
         var existingUser = await UserManager.FindByEmailAsync(form.Email);
         if (existingUser is not null)
         {
@@ -239,7 +233,7 @@
             var patient = new Patient
             {
                 UserId = user.Id,
-                MedicalRecordNumber = form.MedicalRecordNumber,
+                MedicalRecordNumber = await MrnService.GenerateUniqueMrnAsync(),
                 DateOfBirth = form.DateOfBirth,
                 Gender = form.Gender,
                 Address = form.Address,
@@ -279,9 +273,6 @@
 
         [System.ComponentModel.DataAnnotations.Compare(nameof(Password))]
         public string ConfirmPassword { get; set; } = string.Empty;
-
-        [System.ComponentModel.DataAnnotations.Required]
-        public string MedicalRecordNumber { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required]
         public DateTime DateOfBirth { get; set; } = DateTime.UtcNow.Date;

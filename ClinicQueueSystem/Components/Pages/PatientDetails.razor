@@ -108,6 +108,16 @@
             </div>
         </div>
 
+		<div class="card mb-4">
+			<div class="card-header">
+				<h3 class="card-title mb-0">Visits & Notes</h3>
+			</div>
+			<div class="card-body">
+				<p class="text-muted mb-3">View past visit notes and open the editor for active visits.</p>
+				<a class="btn btn-outline-primary" href="/patients/@patient.Id/visits">Open Visit History</a>
+			</div>
+		</div>
+
         @if (showDeleteModal)
         {
             <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">

@@ -21,6 +21,43 @@
             </NavLink>
         </div>
 
+        @if (isPatient)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard/patient" @onclick="HandleNavClick">
+                    <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Patient Dashboard</span>
+                </NavLink>
+            </div>
+        }
+        @if (isDoctor)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard/doctor" @onclick="HandleNavClick">
+                    <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Doctor Dashboard</span>
+                </NavLink>
+            </div>
+        }
+        @if (isNurse)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard/nurse" @onclick="HandleNavClick">
+                    <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Nurse Dashboard</span>
+                </NavLink>
+            </div>
+        }
+        @if (isAdmin)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard/admin" @onclick="HandleNavClick">
+                    <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Admin Dashboard</span>
+                </NavLink>
+            </div>
+        }
+
         @if (canViewAppointments)
         {
             <div class="nav-item px-3">
@@ -49,6 +86,26 @@
                 </NavLink>
             </div>
         }
+
+        @if (canViewQueue)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="waiting-room" @onclick="HandleNavClick">
+                    <span class="bi bi-tv-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Waiting Room</span>
+                </NavLink>
+            </div>
+        }
+
+		@if (canViewQueue)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="my/visit-notes" @onclick="HandleNavClick">
+					<span class="bi bi-people-nav-menu" aria-hidden="true"></span>
+					<span class="nav-text">My Visit Notes</span>
+				</NavLink>
+			</div>
+		}
 
         @if (canCheckIn)
         {
@@ -80,15 +137,7 @@
             </div>
         }
 
-        @if (canViewAdmin)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="admin" @onclick="HandleNavClick">
-                    <span class="bi bi-gear-nav-menu" aria-hidden="true"></span>
-                    <span class="nav-text">Admin</span>
-                </NavLink>
-            </div>
-        }
+       
     </nav>
 </div>
 
@@ -99,6 +148,10 @@
     private bool canViewAdmin = false;
     private bool canViewSchedules = false;
     private bool canViewProviders = false;
+	private bool isPatient = false;
+    private bool isDoctor = false;
+    private bool isNurse = false;
+    private bool isAdmin = false;
 
 
     [Parameter]
@@ -117,6 +170,10 @@
         canViewSchedules = canViewAll || canManage || canViewOwn;
         // Providers visible under user management view
         canViewProviders = await AuthService.HasPermissionAsync(Permissions.Users_View);
+		isPatient = await AuthService.IsPatientAsync();
+        isDoctor = await AuthService.IsDoctorAsync();
+        isNurse = await AuthService.IsNurseAsync();
+        isAdmin = await AuthService.IsAdminAsync();
     }
 
     private Task HandleNavClick()

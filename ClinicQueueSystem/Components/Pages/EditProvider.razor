@@ -1,0 +1,249 @@
+@page "/providers/edit/{Id:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Edit Provider - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+	<h2 class="mb-3" style="color: #2C5F8D;">Edit Provider</h2>
+
+	@if (!string.IsNullOrEmpty(errorMessage))
+	{
+		<div class="alert alert-danger">@errorMessage</div>
+	}
+	@if (loading)
+	{
+		<div class="text-center py-5">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+	}
+	else if (!canEdit)
+	{
+		<div class="alert alert-warning">You do not have permission to edit providers.</div>
+	}
+	else if (form is null)
+	{
+		<div class="alert alert-danger">Provider not found.</div>
+	}
+	else
+	{
+		<EditForm Model="form" OnValidSubmit="HandleSubmitAsync">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">User Account</h3>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">First Name</label>
+								<InputText class="form-control" @bind-Value="form.FirstName" />
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">Last Name</label>
+								<InputText class="form-control" @bind-Value="form.LastName" />
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">Email</label>
+								<InputText type="email" class="form-control" @bind-Value="form.Email" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card mt-4">
+				<div class="card-header">
+					<h3 class="card-title">Provider Details</h3>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">Provider Type</label>
+								<select class="form-select" @bind="form.ProviderType">
+									<option value="Doctor">Doctor</option>
+									<option value="Nurse">Nurse</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">Specialty</label>
+								<InputText class="form-control" @bind-Value="form.Specialty" />
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">License Number</label>
+								<InputText class="form-control" @bind-Value="form.LicenseNumber" />
+							</div>
+						</div>
+					</div>
+
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" id="isActive" @bind="form.IsActive" />
+						<label class="form-check-label" for="isActive">Active</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="d-flex gap-2 mt-3">
+				<button type="submit" class="btn btn-primary" disabled="@isProcessing">
+					@if (isProcessing)
+					{
+						<span class="spinner-border spinner-border-sm me-2" role="status"></span>
+					}
+					Save Changes
+				</button>
+				<a class="btn btn-secondary" href="/providers">Cancel</a>
+			</div>
+		</EditForm>
+	}
+</div>
+
+@code {
+	[Microsoft.AspNetCore.Components.Parameter] public int Id { get; set; }
+
+	private bool loading = true;
+	private bool canEdit = false;
+	private string errorMessage = string.Empty;
+	private bool isProcessing = false;
+
+	private EditProviderForm? form;
+	private Provider? entity;
+
+	protected override async Task OnInitializedAsync()
+	{
+		canEdit = await AuthService.HasPermissionAsync(Permissions.Users_Edit);
+		await LoadAsync();
+	}
+
+	private async Task LoadAsync()
+	{
+		loading = true;
+		entity = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == Id);
+		if (entity is not null)
+		{
+			form = new EditProviderForm
+			{
+				FirstName = entity.User.FirstName,
+				LastName = entity.User.LastName,
+				Email = entity.User.Email ?? string.Empty,
+				ProviderType = entity.ProviderType,
+				Specialty = entity.Specialty,
+				LicenseNumber = entity.LicenseNumber,
+				IsActive = entity.IsActive
+			};
+		}
+		loading = false;
+	}
+
+	private async Task HandleSubmitAsync()
+	{
+		errorMessage = string.Empty;
+		if (!canEdit || entity is null || form is null)
+		{
+			return;
+		}
+		// Unique checks for email (if changed)
+		var user = entity.User;
+		if (!string.Equals(user.Email, form.Email, StringComparison.OrdinalIgnoreCase))
+		{
+			var existingUser = await UserManager.FindByEmailAsync(form.Email);
+			if (existingUser is not null && existingUser.Id != user.Id)
+			{
+				errorMessage = "Another account already uses this email.";
+				return;
+			}
+		}
+		// Unique license (if changed)
+		if (!string.Equals(entity.LicenseNumber, form.LicenseNumber, StringComparison.Ordinal))
+		{
+			var licenseExists = await Db.Providers.AnyAsync(p => p.LicenseNumber == form.LicenseNumber && p.Id != entity.Id);
+			if (licenseExists)
+			{
+				errorMessage = "License number already exists.";
+				return;
+			}
+		}
+
+		isProcessing = true;
+		try
+		{
+			// Update user
+			user.FirstName = form.FirstName;
+			user.LastName = form.LastName;
+			user.Email = form.Email;
+			user.UserName = form.Email;
+			await UserManager.UpdateAsync(user);
+
+			// Update roles if type changed
+			if (!string.Equals(entity.ProviderType, form.ProviderType, StringComparison.Ordinal))
+			{
+				// Ensure roles exist
+				if (!await RoleManager.RoleExistsAsync("Doctor")) await RoleManager.CreateAsync(new IdentityRole("Doctor"));
+				if (!await RoleManager.RoleExistsAsync("Nurse")) await RoleManager.CreateAsync(new IdentityRole("Nurse"));
+				// Remove both, then add the selected
+				await UserManager.RemoveFromRolesAsync(user, new[] { "Doctor", "Nurse" });
+				await UserManager.AddToRoleAsync(user, form.ProviderType);
+			}
+
+			// Update provider
+			entity.ProviderType = form.ProviderType;
+			entity.Specialty = form.Specialty;
+			entity.LicenseNumber = form.LicenseNumber;
+			entity.IsActive = form.IsActive;
+			await Db.SaveChangesAsync();
+
+			Navigation.NavigateTo("/providers");
+		}
+		catch (Exception ex)
+		{
+			errorMessage = $"Error saving changes: {ex.Message}";
+			isProcessing = false;
+		}
+	}
+
+	private class EditProviderForm
+	{
+		[System.ComponentModel.DataAnnotations.Required]
+		public string FirstName { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		public string LastName { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		[System.ComponentModel.DataAnnotations.EmailAddress]
+		public string Email { get; set; } = string.Empty;
+
+		[System.ComponentModel.DataAnnotations.Required]
+		public string ProviderType { get; set; } = "Doctor";
+		public string Specialty { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		public string LicenseNumber { get; set; } = string.Empty;
+		public bool IsActive { get; set; } = true;
+	}
+}
+
+

@@ -1,0 +1,122 @@
+@page "/dashboard/doctor"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "DoctorOnly")]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService Auth
+@inject Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor Http
+
+<PageTitle>Doctor Dashboard</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 style="color:#2C5F8D;">Doctor Dashboard</h2>
+
+    @if (loading)
+    {
+        <div class="text-center py-5"><div class="spinner-border text-primary" /></div>
+    }
+    else if (provider is null)
+    {
+        <div class="alert alert-warning">Your account is not linked to a provider profile.</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header"><strong>Today's Schedule</strong></div>
+                    <div class="card-body">
+                        @if (todayAppointments.Count == 0)
+                        {
+                            <div class="text-muted">No appointments today.</div>
+                        }
+                        else
+                        {
+                            <ul class="list-group">
+                                @foreach (var a in todayAppointments)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span><strong>@a.ScheduledDateTime.ToLocalTime().ToString("t")</strong> — @a.Patient.User.FirstName @a.Patient.User.LastName</span>
+                                        <a class="btn btn-sm btn-outline-primary" href="/patients/@a.PatientId/visits">Open Notes</a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card mb-3">
+                    <div class="card-header"><strong>Current Queue</strong></div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>Waiting</div><div class="fw-bold">@waiting</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Called</div><div class="fw-bold">@called</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>In Room</div><div class="fw-bold">@inRoom</div>
+                        </div>
+                        <a href="/queue" class="btn btn-outline-secondary btn-sm mt-2">View Queue</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><strong>Next Patient</strong></div>
+                    <div class="card-body">
+                        @if (nextTicket is null)
+                        {
+                            <div class="text-muted">No one waiting.</div>
+                        }
+                        else
+                        {
+                            <div class="fs-5">#@nextTicket.QueuePosition — @nextTicket.Patient.User.FirstName @nextTicket.Patient.User.LastName</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private Provider? provider;
+    private List<Appointment> todayAppointments = new();
+    private int waiting, called, inRoom;
+    private QueueTicket? nextTicket;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserManager.GetUserAsync(Http.HttpContext!.User);
+        if (user != null)
+        {
+            provider = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (provider != null)
+            {
+                var start = DateTime.Today;
+                var end = start.AddDays(1);
+                todayAppointments = await Db.Appointments
+                    .Include(a => a.Patient).ThenInclude(p => p.User)
+                    .Where(a => a.ProviderId == provider.Id && a.ScheduledDateTime >= start && a.ScheduledDateTime < end)
+                    .OrderBy(a => a.ScheduledDateTime)
+                    .ToListAsync();
+
+                var active = await Db.QueueTickets
+                    .Include(q => q.Patient).ThenInclude(p => p.User)
+                    .Where(q => q.Status != "Completed")
+                    .OrderBy(q => q.QueuePosition)
+                    .ToListAsync();
+                waiting = active.Count(q => q.Status == "Waiting");
+                called = active.Count(q => q.Status == "Called");
+                inRoom = active.Count(q => q.Status == "InRoom");
+                nextTicket = active.FirstOrDefault(q => q.Status == "Waiting");
+            }
+        }
+        loading = false;
+    }
+}
+
+

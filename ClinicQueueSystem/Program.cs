@@ -3,6 +3,7 @@ using ClinicQueueSystem.Components;
 using ClinicQueueSystem.Data;
 using ClinicQueueSystem.Data.Models;
 using ClinicQueueSystem.Services;
+using ClinicQueueSystem.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -93,6 +94,8 @@ builder.Services.AddScoped<IAuthorizationHandler, RoleHandler>();
 // Register custom authorization service
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IMrnService, MrnService>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -131,5 +134,7 @@ app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapHub<QueueHub>("/hubs/queue");
 
 app.Run();

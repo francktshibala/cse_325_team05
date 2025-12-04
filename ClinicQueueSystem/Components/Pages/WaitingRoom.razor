@@ -1,0 +1,130 @@
+@page "/waiting-room"
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.JSInterop
+@inject ApplicationDbContext Db
+@inject IJSRuntime JS
+@implements IDisposable
+
+<PageTitle>Waiting Room</PageTitle>
+
+<div class="container-fluid" style="padding: 2rem;">
+    <div class="row mb-3">
+        <div class="col-12 text-center">
+            <h1 style="color: #2C5F8D; font-weight: 800;">Now Serving</h1>
+            <p class="text-muted">Live queue status</p>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-12" style="max-width: 1000px;">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-lg mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">Position</th>
+                                        <th>Patient</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Check-In</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in tickets.OrderBy(t => t.QueuePosition))
+                                    {
+                                        <tr>
+                                            <td class="text-center"><strong>#@t.QueuePosition</strong></td>
+                                            <td>
+                                                @FormatName(t.Patient.User.FirstName, t.Patient.User.LastName)
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge @GetStatusBadgeClass(t.Status)">@t.Status</span>
+                                            </td>
+                                            <td class="text-center">@t.CheckInTime.ToLocalTime().ToString("h:mm tt")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<QueueTicket> tickets = new();
+    private bool loading = true;
+    private DotNetObjectReference<WaitingRoom>? dotNetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        loading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("QueueUpdates.register", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task NotifyQueueUpdated()
+    {
+        await LoadAsync();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _ = JS.InvokeVoidAsync("QueueUpdates.dispose");
+        dotNetRef?.Dispose();
+    }
+
+    private async Task LoadAsync()
+    {
+        tickets = await Db.QueueTickets
+            .Include(q => q.Patient).ThenInclude(p => p.User)
+            .Where(q => q.Status != "Completed")
+            .OrderBy(q => q.QueuePosition)
+            .ToListAsync();
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Waiting" => "bg-primary",
+            "Called" => "bg-warning",
+            "InRoom" => "bg-info",
+            "Completed" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private static string FormatName(string first, string last)
+    {
+        if (string.IsNullOrWhiteSpace(first) && string.IsNullOrWhiteSpace(last)) return "Patient";
+        var li = string.IsNullOrWhiteSpace(last) ? "" : $"{last[0]}";
+        return $"{first} {li}.";
+    }
+}
+
+

@@ -2,15 +2,21 @@
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
+@using ClinicQueueSystem.Hubs
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using Microsoft.JSInterop
 @inject ApplicationDbContext DbContext
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IHubContext<QueueHub> QueueHubContext
+@inject IJSRuntime JS
 @attribute [Authorize]
+@implements IDisposable
 
 <PageTitle>Queue Status - Clinic Queue System</PageTitle>
 
@@ -203,6 +209,7 @@
     private bool isPatient = false;
     private bool canCheckIn = false;
     private bool canManageQueue = false;
+    private DotNetObjectReference<Queue>? dotNetRef;
 
     private int waitingCount => queueTickets?.Count(t => t.Status == "Waiting") ?? 0;
     private int calledCount => queueTickets?.Count(t => t.Status == "Called") ?? 0;
@@ -221,6 +228,28 @@
         
         await LoadQueue();
         loading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("QueueUpdates.register", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task NotifyQueueUpdated()
+    {
+        await LoadQueue();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _ = JS.InvokeVoidAsync("QueueUpdates.dispose");
+        dotNetRef?.Dispose();
     }
 
     private async Task LoadQueue()
@@ -299,6 +328,7 @@
             ticket.Status = "Called";
             ticket.CalledTime = DateTime.UtcNow;
             await DbContext.SaveChangesAsync();
+            await QueueHubContext.Clients.All.SendAsync("queueUpdated");
             await LoadQueue();
             StateHasChanged();
         }
@@ -311,6 +341,7 @@
         {
             ticket.Status = "InRoom";
             await DbContext.SaveChangesAsync();
+            await QueueHubContext.Clients.All.SendAsync("queueUpdated");
             await LoadQueue();
             StateHasChanged();
         }
@@ -324,6 +355,7 @@
             ticket.Status = "Completed";
             ticket.CompletedTime = DateTime.UtcNow;
             await DbContext.SaveChangesAsync();
+            await QueueHubContext.Clients.All.SendAsync("queueUpdated");
             await LoadQueue();
             StateHasChanged();
         }

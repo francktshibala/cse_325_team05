@@ -1,0 +1,239 @@
+@page "/providers/create"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService AuthService
+@inject NavigationManager Navigation
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Create Provider - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+	<h2 class="mb-3" style="color: #2C5F8D;">Create New Provider</h2>
+
+	@if (!string.IsNullOrEmpty(errorMessage))
+	{
+		<div class="alert alert-danger">@errorMessage</div>
+	}
+
+	@if (!canCreate)
+	{
+		<div class="alert alert-warning">You do not have permission to create providers.</div>
+	}
+	else
+	{
+		<EditForm Model="form" OnValidSubmit="HandleSubmitAsync">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<div class="card">
+				<div class="card-header">
+					<h3 class="card-title">User Account</h3>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">First Name</label>
+								<InputText class="form-control" @bind-Value="form.FirstName" />
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">Last Name</label>
+								<InputText class="form-control" @bind-Value="form.LastName" />
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group mb-3">
+								<label class="form-label">Email</label>
+								<InputText type="email" class="form-control" @bind-Value="form.Email" />
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group mb-3">
+								<label class="form-label">Password</label>
+								<InputText type="password" class="form-control" @bind-Value="form.Password" />
+							</div>
+						</div>
+						<div class="col-md-3">
+							<div class="form-group mb-3">
+								<label class="form-label">Confirm Password</label>
+								<InputText type="password" class="form-control" @bind-Value="form.ConfirmPassword" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card mt-4">
+				<div class="card-header">
+					<h3 class="card-title">Provider Details</h3>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">Provider Type</label>
+								<select class="form-select" @bind="form.ProviderType">
+									<option value="Doctor">Doctor</option>
+									<option value="Nurse">Nurse</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">Specialty</label>
+								<InputText class="form-control" @bind-Value="form.Specialty" placeholder="e.g., Cardiology" />
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group mb-3">
+								<label class="form-label">License Number</label>
+								<InputText class="form-control" @bind-Value="form.LicenseNumber" placeholder="e.g., LIC-123456" />
+							</div>
+						</div>
+					</div>
+
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" id="isActive" @bind="form.IsActive" />
+						<label class="form-check-label" for="isActive">Active</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="d-flex gap-2 mt-3">
+				<button type="submit" class="btn btn-primary" disabled="@isProcessing">
+					@if (isProcessing)
+					{
+						<span class="spinner-border spinner-border-sm me-2" role="status"></span>
+					}
+					Create Provider
+				</button>
+				<a class="btn btn-secondary" href="/providers">Cancel</a>
+			</div>
+		</EditForm>
+	}
+</div>
+
+@code {
+	private bool canCreate = false;
+	private string errorMessage = string.Empty;
+	private bool isProcessing = false;
+	private CreateProviderForm form = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		canCreate = await AuthService.HasPermissionAsync(Permissions.Users_Create);
+	}
+
+	private async Task HandleSubmitAsync()
+	{
+		errorMessage = string.Empty;
+		if (!canCreate)
+		{
+			errorMessage = "You do not have permission to create providers.";
+			return;
+		}
+		if (form.Password != form.ConfirmPassword)
+		{
+			errorMessage = "Passwords do not match.";
+			return;
+		}
+		// Unique checks
+		var existingUser = await UserManager.FindByEmailAsync(form.Email);
+		if (existingUser is not null)
+		{
+			errorMessage = "An account with this email already exists.";
+			return;
+		}
+		var licenseExists = await Db.Providers.AnyAsync(p => p.LicenseNumber == form.LicenseNumber);
+		if (licenseExists)
+		{
+			errorMessage = "License number already exists.";
+			return;
+		}
+
+		isProcessing = true;
+		try
+		{
+			var user = new ApplicationUser
+			{
+				UserName = form.Email,
+				Email = form.Email,
+				FirstName = form.FirstName,
+				LastName = form.LastName,
+				CreatedAt = DateTime.UtcNow
+			};
+
+			var createResult = await UserManager.CreateAsync(user, form.Password);
+			if (!createResult.Succeeded)
+			{
+				errorMessage = string.Join("; ", createResult.Errors.Select(e => e.Description));
+				isProcessing = false;
+				return;
+			}
+
+			// Ensure role for provider type
+			var role = form.ProviderType;
+			if (!await RoleManager.RoleExistsAsync(role))
+			{
+				await RoleManager.CreateAsync(new IdentityRole(role));
+			}
+			await UserManager.AddToRoleAsync(user, role);
+
+			var provider = new Provider
+			{
+				UserId = user.Id,
+				LicenseNumber = form.LicenseNumber,
+				Specialty = form.Specialty,
+				ProviderType = form.ProviderType,
+				IsActive = form.IsActive,
+				CreatedAt = DateTime.UtcNow
+			};
+			Db.Providers.Add(provider);
+			await Db.SaveChangesAsync();
+
+			Navigation.NavigateTo("/providers");
+		}
+		catch (Exception ex)
+		{
+			errorMessage = $"Error creating provider: {ex.Message}";
+			isProcessing = false;
+		}
+	}
+
+	private class CreateProviderForm
+	{
+		[System.ComponentModel.DataAnnotations.Required]
+		public string FirstName { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		public string LastName { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		[System.ComponentModel.DataAnnotations.EmailAddress]
+		public string Email { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		[System.ComponentModel.DataAnnotations.MinLength(6)]
+		public string Password { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Compare(nameof(Password))]
+		public string ConfirmPassword { get; set; } = string.Empty;
+
+		[System.ComponentModel.DataAnnotations.Required]
+		public string ProviderType { get; set; } = "Doctor";
+		public string Specialty { get; set; } = string.Empty;
+		[System.ComponentModel.DataAnnotations.Required]
+		public string LicenseNumber { get; set; } = string.Empty;
+		public bool IsActive { get; set; } = true;
+	}
+}
+
+

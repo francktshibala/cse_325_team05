@@ -1,0 +1,87 @@
+@page "/dashboard/nurse"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "NurseOnly")]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+
+<PageTitle>Nurse Dashboard</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 style="color:#2C5F8D;">Nurse Dashboard</h2>
+
+    @if (loading)
+    {
+        <div class="text-center py-5"><div class="spinner-border text-primary" /></div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header"><strong>Queue Summary</strong></div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between"><span>Checked-In</span><span class="fw-bold">@waiting</span></div>
+                        <div class="d-flex justify-content-between"><span>Called</span><span class="fw-bold">@called</span></div>
+                        <div class="d-flex justify-content-between"><span>In Room</span><span class="fw-bold">@inRoom</span></div>
+                        <div class="d-flex justify-content-between"><span>Completed</span><span class="fw-bold">@completed</span></div>
+                        <a class="btn btn-primary btn-sm mt-3" href="/queue">Open Queue Tools</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header"><strong>Active Queue</strong></div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Position</th>
+                                        <th>Patient</th>
+                                        <th>Status</th>
+                                        <th>Check-In</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var t in tickets.OrderBy(t => t.QueuePosition))
+                                    {
+                                        <tr>
+                                            <td>#@t.QueuePosition</td>
+                                            <td>@t.Patient.User.FirstName @t.Patient.User.LastName</td>
+                                            <td>@t.Status</td>
+                                            <td>@t.CheckInTime.ToLocalTime().ToString("t")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private int waiting, called, inRoom, completed;
+    private List<QueueTicket> tickets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var active = await Db.QueueTickets
+            .Include(q => q.Patient).ThenInclude(p => p.User)
+            .Where(q => q.Status != "Completed")
+            .OrderBy(q => q.QueuePosition)
+            .ToListAsync();
+        tickets = active;
+        waiting = active.Count(q => q.Status == "Waiting");
+        called = active.Count(q => q.Status == "Called");
+        inRoom = active.Count(q => q.Status == "InRoom");
+        completed = await Db.QueueTickets.CountAsync(q => q.Status == "Completed" && q.CheckInTime >= DateTime.Today);
+        loading = false;
+    }
+}
+
+

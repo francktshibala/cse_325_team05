@@ -1,0 +1,126 @@
+@page "/dashboard/patient"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "PatientOnly")]
+@using Microsoft.EntityFrameworkCore
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@inject ApplicationDbContext Db
+@inject ClinicQueueSystem.Services.AuthorizationService Auth
+@inject Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor Http
+
+<PageTitle>Patient Dashboard</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    <h2 style="color:#2C5F8D;">My Dashboard</h2>
+
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" />
+        </div>
+    }
+    else if (patient is null)
+    {
+        <div class="alert alert-danger">Patient record not found.</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header"><strong>Upcoming Appointments</strong></div>
+                    <div class="card-body">
+                        @if (upcoming.Count == 0)
+                        {
+                            <div class="text-muted">No upcoming appointments.</div>
+                        }
+                        else
+                        {
+                            <ul class="list-group">
+                                @foreach (var a in upcoming)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>@a.ScheduledDateTime.ToLocalTime().ToString("f")</span>
+                                        <span class="badge bg-secondary">@a.Status</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <div class="mt-3">
+                            <a href="/appointments" class="btn btn-outline-primary btn-sm">View All</a>
+                            <a href="/checkin" class="btn btn-primary btn-sm ms-2">Check In</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header"><strong>Recent Visit Summaries</strong></div>
+                    <div class="card-body">
+                        @if (recentNotes.Count == 0)
+                        {
+                            <div class="text-muted">No recent notes.</div>
+                        }
+                        else
+                        {
+                            <ul class="list-group">
+                                @foreach (var n in recentNotes)
+                                {
+                                    <li class="list-group-item">
+                                        <div><span class="badge bg-secondary me-2">@n.Note.NoteType</span>@n.Visit.StartTime.ToLocalTime().ToString("g")</div>
+                                        <div class="text-muted">by @n.Provider.User.FirstName @n.Provider.User.LastName</div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        <div class="mt-3">
+                            <a href="/my/visit-notes" class="btn btn-outline-primary btn-sm">View All Notes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private Patient? patient;
+    private List<Appointment> upcoming = new();
+    private List<(Visit Visit, VisitNote Note, Provider Provider)> recentNotes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserManager.GetUserAsync(Http.HttpContext!.User);
+        if (user != null)
+        {
+            patient = await Db.Patients.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (patient != null)
+            {
+                var now = DateTime.UtcNow;
+                upcoming = await Db.Appointments
+                    .Where(a => a.PatientId == patient.Id && a.ScheduledDateTime >= now)
+                    .OrderBy(a => a.ScheduledDateTime)
+                    .Take(5)
+                    .ToListAsync();
+
+                var visits = await Db.Visits.Where(v => v.PatientId == patient.Id).ToListAsync();
+                var visitIds = visits.Select(v => v.Id).ToList();
+                var notes = await Db.VisitNotes
+                    .Where(n => visitIds.Contains(n.VisitId))
+                    .OrderByDescending(n => n.UpdatedAt ?? n.CreatedAt)
+                    .Take(5)
+                    .ToListAsync();
+                var provIds = notes.Select(n => n.ProviderId).Distinct().ToList();
+                var provMap = await Db.Providers.Include(p => p.User)
+                    .Where(p => provIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+                var visitMap = visits.ToDictionary(v => v.Id);
+                recentNotes = notes.Select(n => (visitMap[n.VisitId], n, provMap[n.ProviderId])).ToList();
+            }
+        }
+        loading = false;
+    }
+}
+
+
