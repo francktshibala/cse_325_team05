@@ -1,0 +1,131 @@
+@page "/dashboard/admin"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using ClinicQueueSystem.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject AuthorizationService AuthService
+@attribute [Authorize]
+
+<PageTitle>Admin Dashboard - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!isAdmin)
+    {
+        <div class="alert alert-warning">This dashboard is only available to admins.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-12 col-lg-8">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="display-6">@totalPatients</div>
+                                <div class="text-muted">Patients</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="display-6">@totalProviders</div>
+                                <div class="text-muted">Providers</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="display-6">@todaysAppointments</div>
+                                <div class="text-muted">Appts Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="display-6">@activeQueue</div>
+                                <div class="text-muted">In Queue</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Usage Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-1">Appointments (last 7 days): <strong>@apptsLast7</strong></li>
+                            <li class="mb-1">New Patients (last 7 days): <strong>@patientsLast7</strong></li>
+                            <li class="mb-1">Visits Completed (last 7 days): <strong>@visitsLast7</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Admin Controls</h5>
+                    </div>
+                    <div class="card-body d-grid gap-2">
+                        <a class="btn btn-primary" href="/patients">Manage Patients</a>
+                        <a class="btn btn-outline-primary" href="/providers">Manage Providers</a>
+                        <a class="btn btn-outline-secondary" href="/schedules/manage">Schedules</a>
+                        <a class="btn btn-outline-secondary" href="/appointments">Appointments</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+    private bool isAdmin = false;
+
+    private int totalPatients;
+    private int totalProviders;
+    private int todaysAppointments;
+    private int activeQueue;
+    private int apptsLast7;
+    private int patientsLast7;
+    private int visitsLast7;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAdmin = await AuthService.IsAdminAsync();
+        if (!isAdmin)
+        {
+            loading = false;
+            return;
+        }
+        var today = DateTime.UtcNow.Date;
+        var week = today.AddDays(-7);
+
+        totalPatients = await Db.Patients.CountAsync();
+        totalProviders = await Db.Providers.CountAsync();
+        todaysAppointments = await Db.Appointments.CountAsync(a => a.ScheduledDateTime.Date == today);
+        activeQueue = await Db.QueueTickets.CountAsync(q => q.Status != "Completed");
+        apptsLast7 = await Db.Appointments.CountAsync(a => a.CreatedAt.Date >= week);
+        patientsLast7 = await Db.Patients.CountAsync(p => p.CreatedAt.Date >= week);
+        visitsLast7 = await Db.Visits.CountAsync(v => v.StartTime.Date >= week && v.EndTime != null);
+
+        loading = false;
+    }
+}
+
+

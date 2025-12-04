@@ -7,10 +7,13 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR
+@using ClinicQueueSystem.Hubs
 @inject ApplicationDbContext DbContext
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IHubContext<QueueHub> QueueHubContext
 @attribute [Authorize]
 
 <PageTitle>Queue Status - Clinic Queue System</PageTitle>
@@ -302,6 +305,7 @@
                 ticket.Status = "Called";
                 ticket.CalledTime = DateTime.UtcNow;
                 await DbContext.SaveChangesAsync();
+                await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();
             }
@@ -325,6 +329,7 @@
             {
                 ticket.Status = "InRoom";
                 await DbContext.SaveChangesAsync();
+                await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();
             }
@@ -348,6 +353,7 @@
                 ticket.Status = "Completed";
                 ticket.CompletedTime = DateTime.UtcNow;
                 await DbContext.SaveChangesAsync();
+                await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();
             }

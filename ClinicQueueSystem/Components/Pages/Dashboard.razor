@@ -1,0 +1,43 @@
+@page "/dashboard"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Services
+@inject AuthorizationService AuthService
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthService.IsAdminAsync())
+        {
+            Navigation.NavigateTo("/dashboard/admin", true);
+            return;
+        }
+        if (await AuthService.IsDoctorAsync())
+        {
+            Navigation.NavigateTo("/dashboard/doctor", true);
+            return;
+        }
+        if (await AuthService.IsNurseAsync())
+        {
+            Navigation.NavigateTo("/dashboard/nurse", true);
+            return;
+        }
+        if (await AuthService.IsPatientAsync())
+        {
+            Navigation.NavigateTo("/dashboard/patient", true);
+            return;
+        }
+        Navigation.NavigateTo("/", true);
+    }
+}
+
+

@@ -19,13 +19,21 @@
     {
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="d-flex gap-2">
-                <input class="form-control" style="max-width: 280px;" placeholder="Search name or email" @bind="search" />
+                <input class="form-control" style="max-width: 280px;" placeholder="Search name or username" @bind="search" />
                 <select class="form-control" style="max-width: 160px;" @bind="statusFilter">
                     <option value="all">All</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                 </select>
                 <button class="btn btn-outline-primary" @onclick="LoadAsync">Apply</button>
+            </div>
+            <div>
+                @if (canCreate)
+                {
+                    <a class="btn btn-primary" href="/providers/create">
+                        <span class="bi bi-plus-circle me-1"></span> New Provider
+                    </a>
+                }
             </div>
         </div>
 
@@ -48,7 +56,7 @@
                     <thead>
                         <tr>
                             <th style="white-space: nowrap;">Name</th>
-                            <th>Email</th>
+                            <th>Username</th>
                             <th>Type</th>
                             <th>Specialty</th>
                             <th>License</th>
@@ -60,8 +68,8 @@
                         @foreach (var p in items)
                         {
                             <tr>
-                                <td style="white-space: nowrap;">@p.User.FirstName @p.User.LastName</td>
-                                <td>@p.User.Email</td>
+                                <td style="white-space: nowrap;">@p.User.FirstName</td>
+                                <td>@p.User.UserName</td>
                                 <td>@p.ProviderType</td>
                                 <td>@p.Specialty</td>
                                 <td>@p.LicenseNumber</td>
@@ -69,6 +77,14 @@
                                     <span class="badge @(p.IsActive ? "bg-success" : "bg-secondary")">@(p.IsActive ? "Active" : "Inactive")</span>
                                 </td>
                                 <td class="text-end" style="white-space: nowrap;">
+                                    @if (canEdit)
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary me-1" href="/providers/edit/@p.Id">Edit</a>
+                                    }
+                                    @if (canDelete)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger me-1" @onclick="() => ConfirmDelete(p.Id)">Delete</button>
+                                    }
                                     <button class="btn btn-sm @(p.IsActive ? "btn-outline-secondary" : "btn-outline-success")" disabled="@(!canEdit)" @onclick="() => ToggleActiveAsync(p.Id, !p.IsActive)">
                                         @(p.IsActive ? "Deactivate" : "Activate")
                                     </button>
@@ -86,14 +102,21 @@
     private bool loading = true;
     private bool canView = false;
     private bool canEdit = false;
+    private bool canCreate = false;
+    private bool canDelete = false;
     private string search = string.Empty;
     private string statusFilter = "all";
     private List<Provider> items = new();
+    private string errorMessage = "";
+    private string successMessage = "";
+    private int? deleteCandidateId = null;
 
     protected override async Task OnInitializedAsync()
     {
         canView = await AuthService.HasPermissionAsync(Permissions.Users_View);
         canEdit = await AuthService.HasPermissionAsync(Permissions.Users_Edit);
+        canCreate = await AuthService.HasPermissionAsync(Permissions.Users_Create);
+        canDelete = await AuthService.HasPermissionAsync(Permissions.Users_Delete);
         await LoadAsync();
     }
 
@@ -117,7 +140,7 @@
             var term = search.Trim().ToLower();
             q = q.Where(p => p.User.FirstName.ToLower().Contains(term)
                 || p.User.LastName.ToLower().Contains(term)
-                || (p.User.Email ?? string.Empty).ToLower().Contains(term));
+                || (p.User.UserName ?? string.Empty).ToLower().Contains(term));
         }
         if (statusFilter == "active")
         {
@@ -146,6 +169,41 @@
         provider.IsActive = newValue;
         await Db.SaveChangesAsync();
         await LoadAsync();
+    }
+
+    private void ConfirmDelete(int providerId)
+    {
+        deleteCandidateId = providerId;
+        errorMessage = "";
+        successMessage = "";
+        StateHasChanged();
+        _ = DeleteProviderAsync();
+    }
+
+    private async Task DeleteProviderAsync()
+    {
+        if (!canDelete || deleteCandidateId is null) return;
+        try
+        {
+            var provider = await Db.Providers.FirstOrDefaultAsync(p => p.Id == deleteCandidateId.Value);
+            if (provider == null) return;
+            Db.Providers.Remove(provider);
+            await Db.SaveChangesAsync();
+            successMessage = "Provider deleted.";
+        }
+        catch (DbUpdateException)
+        {
+            errorMessage = "Cannot delete provider. They have related records (appointments or notes).";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting provider: {ex.Message}";
+        }
+        finally
+        {
+            deleteCandidateId = null;
+            await LoadAsync();
+        }
     }
 }
 

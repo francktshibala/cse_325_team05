@@ -1,0 +1,108 @@
+@page "/providers/edit/{Id:int}"
+@rendermode InteractiveServer
+@using ClinicQueueSystem.Data
+@using ClinicQueueSystem.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+
+<PageTitle>Edit Provider - Clinic Queue System</PageTitle>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (loading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (model is null)
+    {
+        <div class="alert alert-warning">Provider not found.</div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header" style="background-color: #2C5F8D; color: white;">
+                <h5 class="mb-0">Edit Provider</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+                <EditForm Model="model" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">User</label>
+                            <input class="form-control" value="@($"{model.User.FirstName} {model.User.LastName} ({model.User.UserName})")" disabled />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Provider Type</label>
+                            <select class="form-control" @bind="model.ProviderType">
+                                <option>Doctor</option>
+                                <option>Nurse</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" @bind="model.IsActive">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Specialty</label>
+                            <input class="form-control" @bind="model.Specialty" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">License Number</label>
+                            <input class="form-control" @bind="model.LicenseNumber" />
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-primary" type="submit" disabled="@saving">Save</button>
+                        <a class="btn btn-secondary" href="/providers">Cancel</a>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private bool loading = true;
+    private Provider? model;
+    private bool saving = false;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await Db.Providers
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == Id);
+        loading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (model is null) return;
+        saving = true;
+        errorMessage = "";
+        try
+        {
+            await Db.SaveChangesAsync();
+            Navigation.NavigateTo("/providers");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to save provider: {ex.Message}";
+            saving = false;
+        }
+    }
+}
