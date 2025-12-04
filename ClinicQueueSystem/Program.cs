@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ClinicQueueSystem.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +95,9 @@ builder.Services.AddScoped<IAuthorizationHandler, RoleHandler>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
+// SignalR
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Initialize database with roles and admin user
@@ -128,6 +132,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Hubs
+app.MapHub<QueueHub>("/hubs/queue");
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

@@ -196,7 +196,7 @@
                             }
                         </div>
                         
-                        @if (canManageAppointments || (isPatient && appointment.Status == "Scheduled"))
+                        @if (canManageAppointments || canEditVisitNotes || (isPatient && appointment.Status == "Scheduled"))
                         {
                             <div class="card-footer bg-transparent border-top">
                                 <div class="btn-group w-100" role="group">
@@ -205,6 +205,12 @@
                                         <button class="btn btn-sm btn-outline-primary" @onclick="() => EditAppointment(appointment.Id)">
                                             Edit
                                         </button>
+                                    }
+                                    @if (canEditVisitNotes && appointment.Status != "Cancelled")
+                                    {
+                                        <a class="btn btn-sm btn-outline-success" href="/appointments/@appointment.Id/visit-notes">
+                                            Visit Notes
+                                        </a>
                                     }
                                     @if (appointment.Status != "Cancelled" && appointment.Status != "Completed")
                                     {
@@ -236,6 +242,7 @@
     private bool canBookAppointments = false;
     private bool canManageAppointments = false;
     private bool canCancelAppointments = false;
+    private bool canEditVisitNotes = false;
 
     // Filters/sorting
     private string? filterStatus = "";
@@ -263,6 +270,9 @@
         canBookAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Book);
         canManageAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Manage);
         canCancelAppointments = await AuthService.HasPermissionAsync(Permissions.Appointments_Cancel);
+        var canCreateNotes = await AuthService.HasPermissionAsync(Permissions.VisitNotes_Create);
+        var canEditNotes = await AuthService.HasPermissionAsync(Permissions.VisitNotes_Edit);
+        canEditVisitNotes = canCreateNotes || canEditNotes;
 
         // provider options for staff
         if (!isPatient)

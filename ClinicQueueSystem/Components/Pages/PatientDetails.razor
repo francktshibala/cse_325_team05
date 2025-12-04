@@ -107,6 +107,73 @@
                 </div>
             </div>
         </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Visit History</h5>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 me-1">From</label>
+                    <InputDate @bind-Value="historyFrom" class="form-control form-control-sm" />
+                    <label class="form-label mb-0 ms-2 me-1">To</label>
+                    <InputDate @bind-Value="historyTo" class="form-control form-control-sm" />
+                    <input class="form-control form-control-sm ms-2" style="min-width: 240px;" placeholder="Search notes..." @bind="historySearch" @bind:event="oninput" />
+                    <button class="btn btn-sm btn-outline-primary ms-2" @onclick="ApplyVisitFilters">Apply</button>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (filteredVisits?.Any() != true)
+                {
+                    <div class="text-muted">No visits found.</div>
+                }
+                else
+                {
+                    <div class="list-group">
+                        @foreach (var v in filteredVisits)
+                        {
+                            var isOpen = expandedVisitIds.Contains(v.Id);
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div><strong>@v.StartTime.ToLocalTime().ToString("MMM dd, yyyy h:mm tt")</strong> — @v.Status</div>
+                                        @if (!string.IsNullOrEmpty(v.Diagnosis))
+                                        {
+                                            <small class="text-muted">Dx: @v.Diagnosis</small>
+                                        }
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ToggleVisitExpand(v.Id)">
+                                        @(isOpen ? "Hide" : "View")
+                                    </button>
+                                </div>
+                                @if (isOpen)
+                                {
+                                    <div class="mt-3">
+                                        @if (v.Notes?.Any() == true)
+                                        {
+                                            @foreach (var n in v.Notes.OrderByDescending(n => n.CreatedAt))
+                                            {
+                                                <div class="mb-3 p-2 border rounded">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <strong>@n.NoteType</strong> by @n.Provider.User.FirstName @n.Provider.User.LastName
+                                                        </div>
+                                                        <small class="text-muted">@n.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy h:mm tt")</small>
+                                                    </div>
+                                                    <div class="mt-2" style="white-space: pre-wrap;">@n.NoteText</div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="text-muted">No notes recorded for this visit.</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
 
         @if (showDeleteModal)
         {
@@ -145,6 +212,14 @@
     private string errorMessage = "";
     private string successMessage = "";
 
+    // Visit history state
+    private List<Visit> visits = new();
+    private List<Visit> filteredVisits = new();
+    private DateTime? historyFrom = null;
+    private DateTime? historyTo = null;
+    private string historySearch = string.Empty;
+    private HashSet<int> expandedVisitIds = new();
+
     protected override async Task OnInitializedAsync()
     {
         canEditPatients = await AuthService.HasPermissionAsync(Permissions.Patients_Edit);
@@ -155,7 +230,54 @@
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == Id);
 
+        if (patient != null)
+        {
+            visits = await Db.Visits
+                .Where(v => v.PatientId == patient.Id)
+                .Include(v => v.Notes)
+                    .ThenInclude(n => n.Provider)
+                        .ThenInclude(pr => pr.User)
+                .OrderByDescending(v => v.StartTime)
+                .ToListAsync();
+            ApplyVisitFilters();
+        }
+
         loading = false;
+    }
+
+    private void ApplyVisitFilters()
+    {
+        IEnumerable<Visit> q = visits;
+        if (historyFrom.HasValue)
+        {
+            q = q.Where(v => v.StartTime.Date >= historyFrom.Value.Date);
+        }
+        if (historyTo.HasValue)
+        {
+            q = q.Where(v => v.StartTime.Date <= historyTo.Value.Date);
+        }
+        if (!string.IsNullOrWhiteSpace(historySearch))
+        {
+            var s = historySearch.Trim();
+            q = q.Where(v => v.Notes.Any(n =>
+                (n.NoteText != null && n.NoteText.Contains(s, StringComparison.OrdinalIgnoreCase)) ||
+                (n.NoteType != null && n.NoteType.Contains(s, StringComparison.OrdinalIgnoreCase))));
+        }
+        filteredVisits = q
+            .OrderByDescending(v => v.StartTime)
+            .ToList();
+    }
+
+    private void ToggleVisitExpand(int visitId)
+    {
+        if (expandedVisitIds.Contains(visitId))
+        {
+            expandedVisitIds.Remove(visitId);
+        }
+        else
+        {
+            expandedVisitIds.Add(visitId);
+        }
     }
 
     private void ShowDeleteConfirmation()
