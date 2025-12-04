@@ -1,4 +1,4 @@
-@page "/my/visit-summaries"
+@page "/my/visit-notes"
 @rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
@@ -12,7 +12,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize]
 
-<PageTitle>My Visit Summaries - Clinic Queue System</PageTitle>
+<PageTitle>My Visit Notes - Clinic Queue System</PageTitle>
 
 <div class="container" style="padding: 2rem 0;">
     @if (loading)
@@ -39,7 +39,7 @@
     {
         <div class="card mb-4">
             <div class="card-header" style="background-color: #2C5F8D; color: white;">
-                <h3 class="card-title mb-0">My Visit Summaries</h3>
+                <h3 class="card-title mb-0">My Visit Notes</h3>
             </div>
             <div class="card-body">
                 <div class="d-flex flex-wrap align-items-end gap-2">
@@ -64,7 +64,7 @@
 
         @if (filteredVisits?.Any() != true)
         {
-            <div class="alert alert-info">No visit summaries found.</div>
+            <div class="alert alert-info">No visit notes found.</div>
         }
         else
         {
