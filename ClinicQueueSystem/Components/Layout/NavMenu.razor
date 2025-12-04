@@ -25,7 +25,7 @@
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="dashboard" @onclick="HandleNavClick">
-                    <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                    <span class="bi bi-speedometer2 bi-speedometer2-nav-menu" aria-hidden="true"></span>
                     <span class="nav-text">Dashboard</span>
                 </NavLink>
             </div>
@@ -71,12 +71,12 @@
             </div>
         }
 
-        @if (canViewVisitSummaries)
+        @if (isPatientRole)
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="my/visit-summaries" @onclick="HandleNavClick">
+                <NavLink class="nav-link" href="my/visit-notes" @onclick="HandleNavClick">
                     <span class="bi bi-journal-text-nav-menu" aria-hidden="true"></span>
-                    <span class="nav-text">Visit Summaries</span>
+                    <span class="nav-text">Visit Notes</span>
                 </NavLink>
             </div>
         }
@@ -113,9 +113,9 @@
    
     private bool canViewSchedules = false;
     private bool canViewProviders = false;
-    private bool canViewVisitSummaries = false;
     private bool canViewDashboard = false;
     private bool canViewPatientsList = false;
+    private bool isPatientRole = false;
 
 
     [Parameter]
@@ -134,16 +134,14 @@
         canViewSchedules = canViewAll || canManage || canViewOwn;
         // Providers visible under user management view
         canViewProviders = await AuthService.HasPermissionAsync(Permissions.Users_View);
-        // Patients can view their own visit summaries
-        var isPatient = await AuthService.IsPatientAsync();
-        var canViewOwnPatient = await AuthService.HasPermissionAsync(Permissions.Patients_ViewOwn);
-        canViewVisitSummaries = isPatient || canViewOwnPatient;
+        // Visit notes visibility: patients only
+        isPatientRole = await AuthService.IsPatientAsync();
         // Show dashboard for any recognized role
         var isAdmin = await AuthService.IsAdminAsync();
         var isDoctor = await AuthService.IsDoctorAsync();
         var isNurse = await AuthService.IsNurseAsync();
         var isHealth = await AuthService.IsHealthRecordsAsync();
-        canViewDashboard = isAdmin || isDoctor || isNurse || isHealth || isPatient;
+        canViewDashboard = isAdmin || isDoctor || isNurse || isHealth || isPatientRole;
         // Patients page only for staff with Patients_View
         canViewPatientsList = await AuthService.HasPermissionAsync(Permissions.Patients_View);
     }
