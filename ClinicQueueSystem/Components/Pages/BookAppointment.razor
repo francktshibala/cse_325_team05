@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.WebUtilities
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -136,14 +137,11 @@
 </div>
 
 @code {
-    // Query parameters from Availability page
-    [SupplyParameterFromQuery] public int? providerId { get; set; }
-    [SupplyParameterFromQuery] public DateTime? date { get; set; }
-    [SupplyParameterFromQuery] public int? duration { get; set; }
+    // Query parameters will be read manually to avoid conflicts
 
     private class BookAppointmentModel
     {
-        [Required(ErrorMessage = "Patient is required")]
+        // PatientId validation is handled in SubmitAsync to support both patient and staff users
         public int? PatientId { get; set; }
 
         [Required(ErrorMessage = "Provider is required")]
@@ -190,6 +188,11 @@
             {
                 bookModel.PatientId = patient.Id;
             }
+            else
+            {
+                // Patient record doesn't exist - this shouldn't happen but handle gracefully
+                errorMessage = "Your patient profile was not found. Please contact support to set up your patient profile.";
+            }
         }
         else
         {
@@ -198,10 +201,24 @@
 
         providers = await Db.Providers.Include(p => p.User).Where(p => p.IsActive).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
 
-        // Prefill from query
-        if (providerId.HasValue) bookModel.ProviderId = providerId.Value;
-        if (date.HasValue) bookModel.Date = date.Value.Date;
-        if (duration.HasValue) bookModel.DurationMinutes = duration.Value;
+        // Prefill from query parameters (read manually to avoid parameter conflicts)
+        var uri = new Uri(Nav.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        
+        if (query.TryGetValue("providerId", out var providerIdValue) && int.TryParse(providerIdValue, out var providerId))
+        {
+            bookModel.ProviderId = providerId;
+        }
+        
+        if (query.TryGetValue("date", out var dateValue) && DateTime.TryParse(dateValue, out var parsedDate))
+        {
+            bookModel.Date = parsedDate.Date;
+        }
+        
+        if (query.TryGetValue("duration", out var durationValue) && int.TryParse(durationValue, out var duration))
+        {
+            bookModel.DurationMinutes = duration;
+        }
 
         await LoadSlotsInternalAsync();
     }
@@ -235,12 +252,20 @@
     {
         errorMessage = null;
 
-        if (isPatient && bookModel.PatientId is null)
+        // Validate PatientId - required for all users
+        if (bookModel.PatientId is null || bookModel.PatientId == 0)
         {
-            // safety net; should be preset
-            errorMessage = "Patient context not found.";
+            if (isPatient)
+            {
+                errorMessage = "Patient record not found. Please contact support to set up your patient profile.";
+            }
+            else
+            {
+                errorMessage = "Please select a patient.";
+            }
             return;
         }
+        
         if (bookModel.ProviderId is null || bookModel.ProviderId == 0)
         {
             errorMessage = "Please select a provider.";

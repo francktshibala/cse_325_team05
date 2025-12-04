@@ -1,4 +1,5 @@
 @page "/checkin"
+@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -75,13 +76,13 @@
                     <div class="mb-4">
                         <label class="form-label" style="font-weight: 600; color: #495057;">Do you have an appointment?</label>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="checkInType" id="withAppointment" checked="@(checkInType == "appointment")" @onchange="@(() => checkInType = "appointment")" />
+                            <input class="form-check-input" type="radio" name="checkInType" id="withAppointment" checked="@(checkInType == "appointment")" @onchange="@(() => { checkInType = "appointment"; StateHasChanged(); })" />
                             <label class="form-check-label" for="withAppointment">
                                 Yes, I have an appointment
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="checkInType" id="walkIn" checked="@(checkInType == "walkin")" @onchange="@(() => checkInType = "walkin")" />
+                            <input class="form-check-input" type="radio" name="checkInType" id="walkIn" checked="@(checkInType == "walkin")" @onchange="@(() => { checkInType = "walkin"; StateHasChanged(); })" />
                             <label class="form-check-label" for="walkIn">
                                 No, this is a walk-in visit
                             </label>
@@ -123,13 +124,9 @@
                                 <option value="2">Urgent</option>
                                 <option value="3">Emergency</option>
                             </select>
+                            <small class="form-text text-muted">Urgent and Emergency cases will be prioritized in the queue.</small>
                         </div>
                     }
-
-                    <div class="mb-4">
-                        <label class="form-label" style="font-weight: 600; color: #495057;">Reason for Visit</label>
-                        <textarea class="form-control" rows="3" @bind="reason" placeholder="Briefly describe the reason for your visit (optional)"></textarea>
-                    </div>
 
                     <div class="d-grid gap-2">
                         <button class="btn btn-primary btn-lg" @onclick="PerformCheckIn" disabled="@isProcessing">
@@ -157,7 +154,6 @@
     private string checkInType = "appointment";
     private int selectedAppointmentId = 0;
     private int priority = 1;
-    private string reason = "";
     private string errorMessage = "";
     private string successMessage = "";
 
@@ -221,12 +217,40 @@
         if (currentPatient == null)
         {
             errorMessage = "Patient record not found.";
+            StateHasChanged();
             return;
+        }
+
+        // Validate appointment selection if checking in with appointment
+        if (checkInType == "appointment")
+        {
+            if (selectedAppointmentId == 0 || selectedAppointmentId == null)
+            {
+                errorMessage = "Please select an appointment to check in.";
+                isProcessing = false;
+                StateHasChanged();
+                return;
+            }
+
+            // Verify the appointment exists and belongs to this patient
+            var appointment = await DbContext.Appointments
+                .FirstOrDefaultAsync(a => a.Id == selectedAppointmentId && 
+                                          a.PatientId == currentPatient.Id &&
+                                          a.Status == "Scheduled");
+            
+            if (appointment == null)
+            {
+                errorMessage = "Selected appointment not found or is not valid.";
+                isProcessing = false;
+                StateHasChanged();
+                return;
+            }
         }
 
         isProcessing = true;
         errorMessage = "";
         successMessage = "";
+        StateHasChanged();
 
         try
         {
@@ -239,6 +263,7 @@
             {
                 errorMessage = "You are already checked in to the queue.";
                 isProcessing = false;
+                StateHasChanged();
                 return;
             }
 
@@ -269,19 +294,23 @@
 
             successMessage = $"Successfully checked in! Your queue position is #{nextPosition}.";
             hasActiveQueueTicket = true;
+            StateHasChanged();
             
-            // Navigate to queue page after a short delay
+            // Navigate to queue page after a short delay so user can see success message
             await Task.Delay(2000);
             Navigation.NavigateTo("/queue");
         }
         catch (Exception ex)
         {
-            errorMessage = "An error occurred while checking in. Please try again.";
+            errorMessage = $"An error occurred while checking in: {ex.Message}";
             Console.WriteLine($"Check-in error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            StateHasChanged();
         }
         finally
         {
             isProcessing = false;
+            StateHasChanged();
         }
     }
 

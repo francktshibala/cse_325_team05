@@ -1,4 +1,5 @@
 @page "/queue"
+@rendermode InteractiveServer
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -145,19 +146,19 @@
                                                     <div class="btn-group btn-group-sm" role="group">
                                                         @if (ticket.Status == "Waiting")
                                                         {
-                                                            <button class="btn btn-outline-primary" @onclick="() => CallPatient(ticket.Id)" title="Call Patient">
+                                                            <button type="button" class="btn btn-outline-primary" @onclick="@(() => CallPatient(ticket.Id))" title="Call Patient">
                                                                 Call
                                                             </button>
                                                         }
                                                         @if (ticket.Status == "Called")
                                                         {
-                                                            <button class="btn btn-outline-success" @onclick="() => MoveToRoom(ticket.Id)" title="Move to Room">
+                                                            <button type="button" class="btn btn-outline-success" @onclick="@(() => MoveToRoom(ticket.Id))" title="Move to Room">
                                                                 In Room
                                                             </button>
                                                         }
                                                         @if (ticket.Status == "InRoom")
                                                         {
-                                                            <button class="btn btn-outline-secondary" @onclick="() => CompleteVisit(ticket.Id)" title="Complete Visit">
+                                                            <button type="button" class="btn btn-outline-secondary" @onclick="@(() => CompleteVisit(ticket.Id))" title="Complete Visit">
                                                                 Complete
                                                             </button>
                                                         }
@@ -293,12 +294,23 @@
 
     private async Task CallPatient(int ticketId)
     {
-        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
-        if (ticket != null && ticket.Status == "Waiting")
+        try
         {
-            ticket.Status = "Called";
-            ticket.CalledTime = DateTime.UtcNow;
-            await DbContext.SaveChangesAsync();
+            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            if (ticket != null && ticket.Status == "Waiting")
+            {
+                ticket.Status = "Called";
+                ticket.CalledTime = DateTime.UtcNow;
+                await DbContext.SaveChangesAsync();
+                await LoadQueue();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error calling patient: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            // Reload queue to ensure UI is in sync
             await LoadQueue();
             StateHasChanged();
         }
@@ -306,11 +318,21 @@
 
     private async Task MoveToRoom(int ticketId)
     {
-        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
-        if (ticket != null && ticket.Status == "Called")
+        try
         {
-            ticket.Status = "InRoom";
-            await DbContext.SaveChangesAsync();
+            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            if (ticket != null && ticket.Status == "Called")
+            {
+                ticket.Status = "InRoom";
+                await DbContext.SaveChangesAsync();
+                await LoadQueue();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error moving patient to room: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             await LoadQueue();
             StateHasChanged();
         }
@@ -318,12 +340,22 @@
 
     private async Task CompleteVisit(int ticketId)
     {
-        var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
-        if (ticket != null && ticket.Status == "InRoom")
+        try
         {
-            ticket.Status = "Completed";
-            ticket.CompletedTime = DateTime.UtcNow;
-            await DbContext.SaveChangesAsync();
+            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            if (ticket != null && ticket.Status == "InRoom")
+            {
+                ticket.Status = "Completed";
+                ticket.CompletedTime = DateTime.UtcNow;
+                await DbContext.SaveChangesAsync();
+                await LoadQueue();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error completing visit: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             await LoadQueue();
             StateHasChanged();
         }
