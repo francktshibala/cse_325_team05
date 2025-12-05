@@ -106,6 +106,10 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        // Apply migrations automatically (creates tables if needed)
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
+
         await DbInitializer.Initialize(services);
     }
     catch (Exception ex)
