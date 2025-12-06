@@ -1,12 +1,12 @@
 @page "/appointments/edit"
 @page "/appointments/edit/{Id:int}"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Microsoft.EntityFrameworkCore
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Nav
 
 <PageTitle>Edit Appointment - Clinic Queue System</PageTitle>
@@ -118,7 +118,9 @@
             return;
         }
 
-        appointment = await Db.Appointments
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        appointment = await db.Appointments
             .Include(a => a.Provider).ThenInclude(p => p.User)
             .Include(a => a.Patient).ThenInclude(p => p.User)
             .FirstOrDefaultAsync(a => a.Id == Id);
@@ -156,7 +158,9 @@
             appointment.CancelledAt = null;
         }
 
-        await Db.SaveChangesAsync();
+        await using var db = await DbFactory.CreateDbContextAsync();
+        db.Appointments.Update(appointment);
+        await db.SaveChangesAsync();
         saved = true;
     }
 
@@ -166,7 +170,10 @@
         if (appointment.Status == "Cancelled") return;
         appointment.Status = "Cancelled";
         appointment.CancelledAt = DateTime.UtcNow;
-        await Db.SaveChangesAsync();
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        db.Appointments.Update(appointment);
+        await db.SaveChangesAsync();
         model.Status = appointment.Status;
         saved = true;
     }
