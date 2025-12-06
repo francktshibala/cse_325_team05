@@ -4,11 +4,11 @@
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthService
 @attribute [Authorize]
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Patient Details - Clinic Queue System</PageTitle>
 
@@ -226,13 +226,15 @@
         // Only admins and health records staff can delete patients (same permission as edit for now)
         canDeletePatients = await AuthService.HasRoleAsync("Admin", "Health Records");
 
-        patient = await Db.Patients
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        patient = await db.Patients
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == Id);
 
         if (patient != null)
         {
-            visits = await Db.Visits
+            visits = await db.Visits
                 .Where(v => v.PatientId == patient.Id)
                 .Include(v => v.Notes)
                     .ThenInclude(n => n.Provider)
@@ -300,10 +302,11 @@
 
         try
         {
+            await using var db = await DbFactory.CreateDbContextAsync();
             // Note: This will only work if there are no dependent records (appointments, visits, etc.)
             // You might need to handle cascading deletes or prevent deletion if there are dependencies
-            Db.Patients.Remove(patient);
-            await Db.SaveChangesAsync();
+            db.Patients.Remove(patient);
+            await db.SaveChangesAsync();
             Navigation.NavigateTo("/patients");
         }
         catch (DbUpdateException)
