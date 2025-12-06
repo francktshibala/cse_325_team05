@@ -1,10 +1,10 @@
 @page "/appointments/availability"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject IAppointmentService AppointmentService
 
 <PageTitle>Availability - Clinic Queue System</PageTitle>
@@ -90,7 +90,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        providers = await Db.Providers
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        providers = await db.Providers
             .Include(p => p.User)
             .Where(p => p.IsActive)
             .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
