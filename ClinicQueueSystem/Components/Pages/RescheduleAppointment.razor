@@ -1,5 +1,5 @@
 @page "/appointments/reschedule/{Id:int}"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Microsoft.EntityFrameworkCore
 @using System.ComponentModel.DataAnnotations
@@ -7,7 +7,7 @@
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
 
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject IAppointmentService AppointmentService
 @inject NavigationManager Nav
 
@@ -101,7 +101,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        appointment = await Db.Appointments
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        appointment = await db.Appointments
             .Include(a => a.Provider)
                 .ThenInclude(p => p.User)
             .FirstOrDefaultAsync(a => a.Id == Id);
@@ -148,7 +150,10 @@
             appointment.Status = "Scheduled";
             appointment.CancelledAt = null;
         }
-        await Db.SaveChangesAsync();
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        db.Appointments.Update(appointment);
+        await db.SaveChangesAsync();
         newStart = chosenStart;
         success = true;
     }
