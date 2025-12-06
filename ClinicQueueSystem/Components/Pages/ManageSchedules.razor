@@ -1,9 +1,9 @@
 @page "/schedules/manage"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ClinicQueueSystem.Services.AuthorizationService AuthService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -218,9 +218,10 @@
 
     private async Task LoadProvidersAsync(bool allowAll)
     {
+        await using var db = await DbFactory.CreateDbContextAsync();
         if (allowAll)
         {
-            providers = await Db.Providers
+            providers = await db.Providers
                 .Include(p => p.User)
                 .Where(p => p.IsActive)
                 .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
@@ -238,7 +239,7 @@
             }
 
             var userId = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-            var myProvider = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == userId);
+            var myProvider = await db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == userId);
             if (myProvider != null)
             {
                 providers = new() { myProvider };
@@ -264,8 +265,10 @@
             d.IsOff = true;
         }
 
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Defaults (no dates)
-        var existing = await Db.Schedules
+        var existing = await db.Schedules
             .Where(s => s.ProviderId == selectedProviderId
                         && !s.EffectiveDate.HasValue
                         && !s.ExpirationDate.HasValue)
@@ -296,7 +299,7 @@
         if (selectedDate.HasValue)
         {
             var date = selectedDate.Value.Date;
-            var exceptions = await Db.Schedules
+            var exceptions = await db.Schedules
                 .Where(s => s.ProviderId == selectedProviderId
                             && s.EffectiveDate.HasValue
                             && s.EffectiveDate.Value.Date <= date
@@ -393,13 +396,14 @@
         message = string.Empty;
         try
         {
+            await using var db = await DbFactory.CreateDbContextAsync();
             // Replace defaults for this provider
-            var existing = await Db.Schedules
+            var existing = await db.Schedules
                 .Where(s => s.ProviderId == selectedProviderId
                             && !s.EffectiveDate.HasValue
                             && !s.ExpirationDate.HasValue)
                 .ToListAsync();
-            Db.Schedules.RemoveRange(existing);
+            db.Schedules.RemoveRange(existing);
 
             foreach (var day in daySchedules)
             {
@@ -411,7 +415,7 @@
                 {
                     var startTs = TimeSpan.Parse(r.Start);
                     var endTs = TimeSpan.Parse(r.End);
-                    Db.Schedules.Add(new Schedule
+                    db.Schedules.Add(new Schedule
                     {
                         ProviderId = selectedProviderId,
                         DayOfWeek = day.Day,
@@ -423,7 +427,7 @@
                     });
                 }
             }
-            await Db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             message = "Schedules saved successfully.";
             messageClass = "alert-success";
         }
@@ -499,8 +503,9 @@
         message = string.Empty;
         try
         {
+            await using var db = await DbFactory.CreateDbContextAsync();
             // Remove existing single-day exceptions for this date
-            var existingSingles = await Db.Schedules
+            var existingSingles = await db.Schedules
                 .Where(s => s.ProviderId == selectedProviderId
                             && s.DayOfWeek == targetDay
                             && s.EffectiveDate.HasValue
@@ -510,14 +515,14 @@
                 .ToListAsync();
             if (existingSingles.Count > 0)
             {
-                Db.Schedules.RemoveRange(existingSingles);
+                db.Schedules.RemoveRange(existingSingles);
             }
 
             if (!day.IsOff)
             {
                 foreach (var (start, end) in parsed)
                 {
-                    Db.Schedules.Add(new Schedule
+                    db.Schedules.Add(new Schedule
                     {
                         ProviderId = selectedProviderId,
                         DayOfWeek = targetDay,
@@ -532,7 +537,7 @@
             else
             {
                 // Add a single "off" marker
-                Db.Schedules.Add(new Schedule
+                db.Schedules.Add(new Schedule
                 {
                     ProviderId = selectedProviderId,
                     DayOfWeek = targetDay,
@@ -543,7 +548,7 @@
                     ExpirationDate = date
                 });
             }
-            await Db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             message = $"Date exception saved for {targetDay} on {date:yyyy-MM-dd}.";
             messageClass = "alert-success";
             await LoadSchedulesAsync();
