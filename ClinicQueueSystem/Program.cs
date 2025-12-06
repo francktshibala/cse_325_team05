@@ -31,20 +31,26 @@ if (string.IsNullOrEmpty(connectionString))
 {
     // Development: Use SQLite
     connectionString = "Data Source=clinicqueue.db";
-    builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    builder.Services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
         options.UseSqlite(connectionString));
-    // Keep scoped DbContext for Identity
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite(connectionString));
+    // Scoped DbContext for Identity - uses factory to avoid threading issues
+    builder.Services.AddScoped<ApplicationDbContext>(sp =>
+    {
+        var factory = sp.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+        return factory.CreateDbContext();
+    });
 }
 else
 {
     // Production: Use SQL Server (Azure)
-    builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    builder.Services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
-    // Keep scoped DbContext for Identity
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(connectionString));
+    // Scoped DbContext for Identity - uses factory to avoid threading issues
+    builder.Services.AddScoped<ApplicationDbContext>(sp =>
+    {
+        var factory = sp.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+        return factory.CreateDbContext();
+    });
 }
 
 // Add Identity services
