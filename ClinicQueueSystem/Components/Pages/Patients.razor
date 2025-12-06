@@ -7,7 +7,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @attribute [Authorize]
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
