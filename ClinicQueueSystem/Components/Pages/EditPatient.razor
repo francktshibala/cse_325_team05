@@ -4,11 +4,11 @@
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthService
 @attribute [Authorize]
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Edit Patient - Clinic Queue System</PageTitle>
 
@@ -126,7 +126,8 @@
 
         if (canEditPatients)
         {
-            patient = await Db.Patients
+            await using var db = await DbFactory.CreateDbContextAsync();
+            patient = await db.Patients
                 .Include(p => p.User)
                 .FirstOrDefaultAsync(p => p.Id == Id);
         }
@@ -143,8 +144,9 @@
 
         try
         {
-            Db.Patients.Update(patient);
-            await Db.SaveChangesAsync();
+            await using var db = await DbFactory.CreateDbContextAsync();
+            db.Patients.Update(patient);
+            await db.SaveChangesAsync();
             Navigation.NavigateTo("/patients");
         }
         catch (Exception ex)
