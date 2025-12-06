@@ -31,12 +31,18 @@ if (string.IsNullOrEmpty(connectionString))
 {
     // Development: Use SQLite
     connectionString = "Data Source=clinicqueue.db";
+    builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+        options.UseSqlite(connectionString));
+    // Keep scoped DbContext for Identity
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite(connectionString));
 }
 else
 {
     // Production: Use SQL Server (Azure)
+    builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString));
+    // Keep scoped DbContext for Identity
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(connectionString));
 }
