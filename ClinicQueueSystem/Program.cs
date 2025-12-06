@@ -28,8 +28,21 @@ builder.Services.AddScoped<AuthenticationStateProvider, Microsoft.AspNetCore.Com
 // Add database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Data Source=clinicqueue.db";
+
+// Use SQL Server for production (Azure), SQLite for development
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+{
+    if (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase))
+    {
+        // SQL Server (Azure)
+        options.UseSqlServer(connectionString);
+    }
+    else
+    {
+        // SQLite (Local development)
+        options.UseSqlite(connectionString);
+    }
+});
 
 // Add Identity services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
