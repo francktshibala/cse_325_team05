@@ -7,7 +7,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject ApplicationDbContext DbContext
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -161,7 +161,7 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         currentUser = await UserManager.GetUserAsync(authState.User);
-        
+
         if (currentUser == null)
         {
             loading = false;
@@ -176,8 +176,10 @@
             return;
         }
 
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Get patient record
-        currentPatient = await DbContext.Patients
+        currentPatient = await db.Patients
             .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
 
         if (currentPatient == null)
@@ -188,8 +190,8 @@
         }
 
         // Check for active queue ticket
-        var activeTicket = await DbContext.QueueTickets
-            .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id && 
+        var activeTicket = await db.QueueTickets
+            .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id &&
                                      q.Status != "Completed");
 
         if (activeTicket != null)
@@ -200,11 +202,11 @@
         }
 
         // Load upcoming appointments
-        upcomingAppointments = await DbContext.Appointments
+        upcomingAppointments = await db.Appointments
             .Include(a => a.Provider)
                 .ThenInclude(p => p.User)
-            .Where(a => a.PatientId == currentPatient.Id && 
-                       a.Status == "Scheduled" && 
+            .Where(a => a.PatientId == currentPatient.Id &&
+                       a.Status == "Scheduled" &&
                        a.ScheduledDateTime >= DateTime.Now)
             .OrderBy(a => a.ScheduledDateTime)
             .ToListAsync();
@@ -221,6 +223,8 @@
             return;
         }
 
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Validate appointment selection if checking in with appointment
         if (checkInType == "appointment")
         {
@@ -233,11 +237,11 @@
             }
 
             // Verify the appointment exists and belongs to this patient
-            var appointment = await DbContext.Appointments
-                .FirstOrDefaultAsync(a => a.Id == selectedAppointmentId && 
+            var appointment = await db.Appointments
+                .FirstOrDefaultAsync(a => a.Id == selectedAppointmentId &&
                                           a.PatientId == currentPatient.Id &&
                                           a.Status == "Scheduled");
-            
+
             if (appointment == null)
             {
                 errorMessage = "Selected appointment not found or is not valid.";
@@ -255,8 +259,8 @@
         try
         {
             // Check if already in queue
-            var existingTicket = await DbContext.QueueTickets
-                .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id && 
+            var existingTicket = await db.QueueTickets
+                .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id &&
                                           q.Status != "Completed");
 
             if (existingTicket != null)
@@ -268,7 +272,7 @@
             }
 
             // Get the next queue position
-            var maxPosition = await DbContext.QueueTickets
+            var maxPosition = await db.QueueTickets
                 .Where(q => q.Status != "Completed")
                 .Select(q => (int?)q.QueuePosition)
                 .MaxAsync();
@@ -279,8 +283,8 @@
             var queueTicket = new QueueTicket
             {
                 PatientId = currentPatient.Id,
-                AppointmentId = checkInType == "appointment" && selectedAppointmentId > 0 
-                    ? selectedAppointmentId 
+                AppointmentId = checkInType == "appointment" && selectedAppointmentId > 0
+                    ? selectedAppointmentId
                     : null,
                 CheckInTime = DateTime.UtcNow,
                 Status = "Waiting",
@@ -289,13 +293,13 @@
                 EstimatedWaitMinutes = CalculateWaitTime(nextPosition)
             };
 
-            DbContext.QueueTickets.Add(queueTicket);
-            await DbContext.SaveChangesAsync();
+            db.QueueTickets.Add(queueTicket);
+            await db.SaveChangesAsync();
 
             successMessage = $"Successfully checked in! Your queue position is #{nextPosition}.";
             hasActiveQueueTicket = true;
             StateHasChanged();
-            
+
             // Navigate to queue page after a short delay so user can see success message
             await Task.Delay(2000);
             Navigation.NavigateTo("/queue");
@@ -318,15 +322,16 @@
     {
         if (currentPatient == null) return;
 
-        var activeTicket = await DbContext.QueueTickets
-            .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id && 
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var activeTicket = await db.QueueTickets
+            .FirstOrDefaultAsync(q => q.PatientId == currentPatient.Id &&
                                      q.Status != "Completed");
 
         if (activeTicket != null)
         {
             activeTicket.Status = "Completed";
             activeTicket.CompletedTime = DateTime.UtcNow;
-            await DbContext.SaveChangesAsync();
+            await db.SaveChangesAsync();
             hasActiveQueueTicket = false;
             StateHasChanged();
         }
