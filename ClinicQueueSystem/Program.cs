@@ -26,23 +26,20 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider>();
 
 // Add database context
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Data Source=clinicqueue.db";
-
-// Use SQL Server for production (Azure), SQLite for development
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
 {
-    if (connectionString.Contains("Server=", StringComparison.OrdinalIgnoreCase))
-    {
-        // SQL Server (Azure)
-        options.UseSqlServer(connectionString);
-    }
-    else
-    {
-        // SQLite (Local development)
-        options.UseSqlite(connectionString);
-    }
-});
+    // Development: Use SQLite
+    connectionString = "Data Source=clinicqueue.db";
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite(connectionString));
+}
+else
+{
+    // Production: Use SQL Server (Azure)
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
 
 // Add Identity services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
