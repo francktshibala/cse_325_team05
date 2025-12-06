@@ -1,10 +1,10 @@
 @page "/providers/create"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager Navigation
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
@@ -75,9 +75,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Load users who are not already providers
-        var existingProviderUserIds = await Db.Providers.Select(p => p.UserId).ToListAsync();
-        availableUsers = await Db.Users
+        var existingProviderUserIds = await db.Providers.Select(p => p.UserId).ToListAsync();
+        availableUsers = await db.Users
             .Where(u => !existingProviderUserIds.Contains(u.Id))
             .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
             .ToListAsync();
@@ -93,7 +95,10 @@
             errorMessage = "Please select a user.";
             return;
         }
-        var exists = await Db.Providers.AnyAsync(p => p.UserId == selectedUserId);
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        var exists = await db.Providers.AnyAsync(p => p.UserId == selectedUserId);
         if (exists)
         {
             errorMessage = "Selected user is already a provider.";
@@ -103,8 +108,8 @@
         saving = true;
         try
         {
-            Db.Providers.Add(model);
-            await Db.SaveChangesAsync();
+            db.Providers.Add(model);
+            await db.SaveChangesAsync();
             Navigation.NavigateTo("/providers");
         }
         catch (Exception ex)

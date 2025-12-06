@@ -331,7 +331,6 @@
         {
             activeTicket.Status = "Completed";
             activeTicket.CompletedTime = DateTime.UtcNow;
-            db.QueueTickets.Update(activeTicket);
             await db.SaveChangesAsync();
             hasActiveQueueTicket = false;
             StateHasChanged();

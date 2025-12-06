@@ -3,7 +3,7 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Microsoft.EntityFrameworkCore
 @using ClinicQueueSystem.Data
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject ClinicQueueSystem.Services.AuthorizationService AuthService
 
 <PageTitle>Providers - Clinic Queue System</PageTitle>
@@ -130,7 +130,8 @@
         loading = true;
         StateHasChanged();
 
-        var q = Db.Providers
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var q = db.Providers
             .Include(p => p.User)
             .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
             .AsQueryable();
@@ -161,13 +162,14 @@
         {
             return;
         }
-        var provider = await Db.Providers.FirstOrDefaultAsync(p => p.Id == providerId);
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == providerId);
         if (provider == null)
         {
             return;
         }
         provider.IsActive = newValue;
-        await Db.SaveChangesAsync();
+        await db.SaveChangesAsync();
         await LoadAsync();
     }
 
@@ -185,10 +187,11 @@
         if (!canDelete || deleteCandidateId is null) return;
         try
         {
-            var provider = await Db.Providers.FirstOrDefaultAsync(p => p.Id == deleteCandidateId.Value);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == deleteCandidateId.Value);
             if (provider == null) return;
-            Db.Providers.Remove(provider);
-            await Db.SaveChangesAsync();
+            db.Providers.Remove(provider);
+            await db.SaveChangesAsync();
             successMessage = "Provider deleted.";
         }
         catch (DbUpdateException)

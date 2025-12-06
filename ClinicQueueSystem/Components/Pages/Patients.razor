@@ -4,10 +4,10 @@
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @attribute [Authorize]
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Patients - Clinic Queue System</PageTitle>
 
@@ -71,7 +71,9 @@
     {
         canCreatePatients = await AuthService.HasPermissionAsync(Permissions.Patients_Create);
 
-        patients = await Db.Patients
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        patients = await db.Patients
             .Include(p => p.User)
             .ToListAsync();
     }

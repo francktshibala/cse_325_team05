@@ -1,12 +1,12 @@
 @page "/appointments/{AppointmentId:int}/visit-notes"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -177,13 +177,15 @@
             return;
         }
 
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Get current provider (doctor/nurse user must map to Provider)
-        currentProvider = await Db.Providers
+        currentProvider = await db.Providers
             .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.UserId == user.Id);
 
         // Load appointment with patient/provider
-        appointment = await Db.Appointments
+        appointment = await db.Appointments
             .Include(a => a.Patient).ThenInclude(p => p.User)
             .Include(a => a.Provider).ThenInclude(p => p.User)
             .Include(a => a.Visit)
@@ -206,8 +208,8 @@
                 StartTime = DateTime.UtcNow,
                 Status = "InProgress"
             };
-            Db.Visits.Add(visit);
-            await Db.SaveChangesAsync();
+            db.Visits.Add(visit);
+            await db.SaveChangesAsync();
             // Attach visit to appointment entity
             appointment.Visit = visit;
         }
@@ -228,7 +230,8 @@
     {
         if (visit == null) return;
 
-        notesHistory = await Db.VisitNotes
+        await using var db = await DbFactory.CreateDbContextAsync();
+        notesHistory = await db.VisitNotes
             .Where(vn => vn.VisitId == visit.Id)
             .Include(vn => vn.Provider).ThenInclude(p => p.User)
             .OrderByDescending(vn => vn.CreatedAt)
@@ -238,7 +241,8 @@
     private async Task LoadEditorBufferForCurrentSelection()
     {
         if (visit == null || currentProvider == null) return;
-        var existing = await Db.VisitNotes
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var existing = await db.VisitNotes
             .Where(vn => vn.VisitId == visit.Id && vn.ProviderId == currentProvider.Id && vn.NoteType == selectedNoteType)
             .OrderByDescending(vn => vn.UpdatedAt ?? vn.CreatedAt)
             .FirstOrDefaultAsync();
@@ -276,7 +280,8 @@
             isSaving = true;
             StateHasChanged();
 
-            var existing = await Db.VisitNotes
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var existing = await db.VisitNotes
                 .FirstOrDefaultAsync(vn => vn.VisitId == visit.Id && vn.ProviderId == currentProvider.Id && vn.NoteType == selectedNoteType);
 
             if (existing == null)
@@ -289,15 +294,16 @@
                     NoteText = noteText,
                     CreatedAt = DateTime.UtcNow
                 };
-                Db.VisitNotes.Add(existing);
+                db.VisitNotes.Add(existing);
             }
             else
             {
                 existing.NoteText = noteText;
                 existing.UpdatedAt = DateTime.UtcNow;
+                db.VisitNotes.Update(existing);
             }
 
-            await Db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             lastSavedAt = DateTime.UtcNow;
             successMessage = "";
             errorMessage = "";

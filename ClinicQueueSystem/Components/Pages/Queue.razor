@@ -1,5 +1,5 @@
 @page "/queue"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -9,7 +9,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.SignalR
 @using ClinicQueueSystem.Hubs
-@inject ApplicationDbContext DbContext
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -229,7 +229,8 @@
 
     private async Task LoadQueue()
     {
-        var query = DbContext.QueueTickets
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var query = db.QueueTickets
             .Include(q => q.Patient)
                 .ThenInclude(p => p.User)
             .Include(q => q.Appointment)
@@ -239,9 +240,9 @@
         if (isPatient)
         {
             // Patients see only their own queue ticket
-            var patient = await DbContext.Patients
+            var patient = await db.Patients
                 .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
-            
+
             if (patient != null)
             {
                 query = query.Where(q => q.PatientId == patient.Id && q.Status != "Completed");
@@ -299,12 +300,13 @@
     {
         try
         {
-            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var ticket = await db.QueueTickets.FindAsync(ticketId);
             if (ticket != null && ticket.Status == "Waiting")
             {
                 ticket.Status = "Called";
                 ticket.CalledTime = DateTime.UtcNow;
-                await DbContext.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();
@@ -324,11 +326,12 @@
     {
         try
         {
-            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var ticket = await db.QueueTickets.FindAsync(ticketId);
             if (ticket != null && ticket.Status == "Called")
             {
                 ticket.Status = "InRoom";
-                await DbContext.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();
@@ -347,12 +350,13 @@
     {
         try
         {
-            var ticket = await DbContext.QueueTickets.FindAsync(ticketId);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var ticket = await db.QueueTickets.FindAsync(ticketId);
             if (ticket != null && ticket.Status == "InRoom")
             {
                 ticket.Status = "Completed";
                 ticket.CompletedTime = DateTime.UtcNow;
-                await DbContext.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
                 StateHasChanged();

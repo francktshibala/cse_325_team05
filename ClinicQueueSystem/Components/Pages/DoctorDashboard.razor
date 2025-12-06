@@ -1,5 +1,5 @@
 @page "/dashboard/doctor"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject AuthenticationStateProvider AuthState
 @inject UserManager<ApplicationUser> UserManager
@@ -170,7 +170,10 @@
             loading = false;
             return;
         }
-        provider = await Db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        provider = await db.Providers.Include(p => p.User).FirstOrDefaultAsync(p => p.UserId == user.Id);
         if (provider == null && isDoctor)
         {
             // Auto-create minimal provider profile for doctors
@@ -183,21 +186,21 @@
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
-            Db.Providers.Add(provider);
-            await Db.SaveChangesAsync();
+            db.Providers.Add(provider);
+            await db.SaveChangesAsync();
         }
         var today = DateTime.UtcNow.Date;
         var tomorrow = today.AddDays(1);
         if (provider != null)
         {
-            todaysAppointments = await Db.Appointments
+            todaysAppointments = await db.Appointments
                 .Include(a => a.Patient).ThenInclude(p => p.User)
                 .Where(a => a.ProviderId == provider.Id && a.ScheduledDateTime >= today && a.ScheduledDateTime < tomorrow && a.Status != "Cancelled")
                 .OrderBy(a => a.ScheduledDateTime)
                 .ToListAsync();
         }
 
-        activeQueue = await Db.QueueTickets
+        activeQueue = await db.QueueTickets
             .Include(q => q.Patient).ThenInclude(p => p.User)
             .Where(q => q.Status != "Completed")
             .OrderBy(q => q.QueuePosition)
