@@ -1,5 +1,5 @@
 @page "/dashboard/patient"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject AuthenticationStateProvider AuthState
 @inject UserManager<ApplicationUser> UserManager
@@ -137,7 +137,9 @@
             return;
         }
 
-        patient = await Db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        patient = await db.Patients.FirstOrDefaultAsync(p => p.UserId == user.Id);
         if (patient == null && isPatient)
         {
             // Auto-create minimal patient profile
@@ -153,20 +155,20 @@
                 EmergencyPhone = string.Empty,
                 CreatedAt = DateTime.UtcNow
             };
-            Db.Patients.Add(patient);
-            await Db.SaveChangesAsync();
+            db.Patients.Add(patient);
+            await db.SaveChangesAsync();
         }
         var now = DateTime.UtcNow;
         if (patient != null)
         {
-            upcoming = await Db.Appointments
+            upcoming = await db.Appointments
                 .Include(a => a.Provider).ThenInclude(p => p.User)
                 .Where(a => a.PatientId == patient.Id && a.ScheduledDateTime >= now && a.Status != "Cancelled")
                 .OrderBy(a => a.ScheduledDateTime)
                 .Take(5)
                 .ToListAsync();
 
-            recentVisits = await Db.Visits
+            recentVisits = await db.Visits
                 .Where(v => v.PatientId == patient.Id)
                 .OrderByDescending(v => v.StartTime)
                 .Take(5)

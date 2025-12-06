@@ -306,7 +306,6 @@
             {
                 ticket.Status = "Called";
                 ticket.CalledTime = DateTime.UtcNow;
-                db.QueueTickets.Update(ticket);
                 await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
@@ -332,7 +331,6 @@
             if (ticket != null && ticket.Status == "Called")
             {
                 ticket.Status = "InRoom";
-                db.QueueTickets.Update(ticket);
                 await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();
@@ -358,7 +356,6 @@
             {
                 ticket.Status = "Completed";
                 ticket.CompletedTime = DateTime.UtcNow;
-                db.QueueTickets.Update(ticket);
                 await db.SaveChangesAsync();
                 await QueueHubContext.Clients.All.SendAsync("QueueUpdated");
                 await LoadQueue();

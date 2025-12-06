@@ -1,5 +1,5 @@
 @page "/dashboard/nurse"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject AuthenticationStateProvider AuthState
 @inject UserManager<ApplicationUser> UserManager
@@ -130,7 +130,8 @@
         var user = await UserManager.GetUserAsync(authState.User);
         if (user != null)
         {
-            var provider = await Db.Providers.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var provider = await db.Providers.FirstOrDefaultAsync(p => p.UserId == user.Id);
             if (provider == null)
             {
                 provider = new Provider
@@ -142,8 +143,8 @@
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                Db.Providers.Add(provider);
-                await Db.SaveChangesAsync();
+                db.Providers.Add(provider);
+                await db.SaveChangesAsync();
             }
         }
         await LoadQueue();
@@ -166,7 +167,8 @@
 
     private async Task LoadQueue()
     {
-        var query = Db.QueueTickets
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var query = db.QueueTickets
             .Include(q => q.Patient).ThenInclude(p => p.User)
             .Where(q => q.Status != "Completed");
         queueTickets = await query.ToListAsync();
