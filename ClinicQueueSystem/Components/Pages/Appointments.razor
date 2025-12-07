@@ -1,5 +1,5 @@
 @page "/appointments"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Data
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
@@ -7,7 +7,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject ApplicationDbContext DbContext
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthorizationService AuthService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -277,7 +277,8 @@
         // provider options for staff
         if (!isPatient)
         {
-            providerFilterOptions = await DbContext.Providers
+            await using var db = await DbFactory.CreateDbContextAsync();
+            providerFilterOptions = await db.Providers
                 .Include(p => p.User)
                 .Where(p => p.IsActive)
                 .OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName)
@@ -290,7 +291,8 @@
 
     private async Task LoadAppointments()
     {
-        var query = DbContext.Appointments
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var query = db.Appointments
             .Include(a => a.Patient)
                 .ThenInclude(p => p.User)
             .Include(a => a.Provider)
@@ -301,9 +303,9 @@
         if (isPatient)
         {
             // Patients see only their own appointments
-            var patient = await DbContext.Patients
+            var patient = await db.Patients
                 .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
-            
+
             if (patient != null)
             {
                 query = query.Where(a => a.PatientId == patient.Id);
@@ -317,9 +319,9 @@
         else if (await AuthService.IsDoctorAsync())
         {
             // Doctors see appointments for their patients
-            var provider = await DbContext.Providers
+            var provider = await db.Providers
                 .FirstOrDefaultAsync(p => p.UserId == currentUser!.Id);
-            
+
             if (provider != null)
             {
                 query = query.Where(a => a.ProviderId == provider.Id);
@@ -364,12 +366,14 @@
 
     private async Task CancelAppointment(int appointmentId)
     {
-        var appointment = await DbContext.Appointments.FindAsync(appointmentId);
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var appointment = await db.Appointments.FindAsync(appointmentId);
         if (appointment != null && appointment.Status != "Cancelled")
         {
             appointment.Status = "Cancelled";
             appointment.CancelledAt = DateTime.UtcNow;
-            await DbContext.SaveChangesAsync();
+            db.Appointments.Update(appointment);
+            await db.SaveChangesAsync();
             await LoadAppointments();
             StateHasChanged();
         }
