@@ -1,5 +1,5 @@
 @page "/appointments/book"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components
@@ -11,7 +11,7 @@
 @using ClinicQueueSystem.Data.Models
 @using ClinicQueueSystem.Services
 
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthorizationService AuthService
@@ -180,10 +180,12 @@
         currentUser = await UserManager.GetUserAsync(authState.User);
         isPatient = await AuthService.IsPatientAsync();
 
+        await using var db = await DbFactory.CreateDbContextAsync();
+
         // Patients: preselect their patient record
         if (isPatient && currentUser != null)
         {
-            var patient = await Db.Patients.FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+            var patient = await db.Patients.FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
             if (patient != null)
             {
                 bookModel.PatientId = patient.Id;
@@ -196,25 +198,25 @@
         }
         else
         {
-            patients = await Db.Patients.Include(p => p.User).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
+            patients = await db.Patients.Include(p => p.User).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
         }
 
-        providers = await Db.Providers.Include(p => p.User).Where(p => p.IsActive).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
+        providers = await db.Providers.Include(p => p.User).Where(p => p.IsActive).OrderBy(p => p.User.LastName).ThenBy(p => p.User.FirstName).ToListAsync();
 
         // Prefill from query parameters (read manually to avoid parameter conflicts)
         var uri = new Uri(Nav.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-        
+
         if (query.TryGetValue("providerId", out var providerIdValue) && int.TryParse(providerIdValue, out var providerId))
         {
             bookModel.ProviderId = providerId;
         }
-        
+
         if (query.TryGetValue("date", out var dateValue) && DateTime.TryParse(dateValue, out var parsedDate))
         {
             bookModel.Date = parsedDate.Date;
         }
-        
+
         if (query.TryGetValue("duration", out var durationValue) && int.TryParse(durationValue, out var duration))
         {
             bookModel.DurationMinutes = duration;
@@ -286,6 +288,7 @@
         }
 
         // Create appointment
+        await using var db = await DbFactory.CreateDbContextAsync();
         var appt = new Appointment
         {
             PatientId = bookModel.PatientId!.Value,
@@ -296,8 +299,8 @@
             Status = "Scheduled",
             Reason = bookModel.Reason
         };
-        Db.Appointments.Add(appt);
-        await Db.SaveChangesAsync();
+        db.Appointments.Add(appt);
+        await db.SaveChangesAsync();
 
         bookModel.ScheduledDateTime = chosenStart;
         success = true;
