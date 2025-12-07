@@ -1,5 +1,5 @@
 @page "/dashboard"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Services
 @inject AuthorizationService AuthService
 @inject NavigationManager Navigation
