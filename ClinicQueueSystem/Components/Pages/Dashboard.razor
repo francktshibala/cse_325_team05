@@ -1,5 +1,5 @@
 @page "/dashboard"
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 @using ClinicQueueSystem.Services
 @inject AuthorizationService AuthService
 @inject NavigationManager Navigation
@@ -18,25 +18,25 @@
     {
         if (await AuthService.IsAdminAsync())
         {
-            Navigation.NavigateTo("/dashboard/admin", true);
+            Navigation.NavigateTo("/dashboard/admin", false);
             return;
         }
         if (await AuthService.IsDoctorAsync())
         {
-            Navigation.NavigateTo("/dashboard/doctor", true);
+            Navigation.NavigateTo("/dashboard/doctor", false);
             return;
         }
         if (await AuthService.IsNurseAsync())
         {
-            Navigation.NavigateTo("/dashboard/nurse", true);
+            Navigation.NavigateTo("/dashboard/nurse", false);
             return;
         }
         if (await AuthService.IsPatientAsync())
         {
-            Navigation.NavigateTo("/dashboard/patient", true);
+            Navigation.NavigateTo("/dashboard/patient", false);
             return;
         }
-        Navigation.NavigateTo("/", true);
+        Navigation.NavigateTo("/", false);
     }
 }
 
