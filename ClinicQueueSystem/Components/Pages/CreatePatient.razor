@@ -4,11 +4,11 @@
 @using ClinicQueueSystem.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthService
 @attribute [Authorize]
-@rendermode InteractiveServer
+@rendermode @(new Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Create Patient - Clinic Queue System</PageTitle>
 
@@ -137,10 +137,11 @@
 
         if (canManagePatients)
         {
+            await using var db = await DbFactory.CreateDbContextAsync();
             // Load users who are not already patients and have the Patient role
-            var existingPatientUserIds = await Db.Patients.Select(p => p.UserId).ToListAsync();
+            var existingPatientUserIds = await db.Patients.Select(p => p.UserId).ToListAsync();
 
-            availableUsers = await Db.Users
+            availableUsers = await db.Users
                 .Where(u => !existingPatientUserIds.Contains(u.Id))
                 .OrderBy(u => u.FirstName)
                 .ThenBy(u => u.LastName)
@@ -160,8 +161,9 @@
             return;
         }
 
+        await using var db = await DbFactory.CreateDbContextAsync();
         // Check if MRN is unique
-        var existingMrn = await Db.Patients.AnyAsync(p => p.MedicalRecordNumber == newPatient.MedicalRecordNumber);
+        var existingMrn = await db.Patients.AnyAsync(p => p.MedicalRecordNumber == newPatient.MedicalRecordNumber);
         if (existingMrn)
         {
             errorMessage = "Medical Record Number already exists. Please use a unique MRN.";
@@ -173,8 +175,8 @@
         try
         {
             newPatient.UserId = selectedUserId;
-            Db.Patients.Add(newPatient);
-            await Db.SaveChangesAsync();
+            db.Patients.Add(newPatient);
+            await db.SaveChangesAsync();
             Navigation.NavigateTo("/patients");
         }
         catch (Exception ex)
